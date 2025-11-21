@@ -18,22 +18,39 @@ export default function MatchesPageV2() {
 
     // Subscribe to matches where current user is either user1 or user2
     const matchesRef = collection(db, 'matches');
-    const q = query(matchesRef, orderBy('matchedAt', 'desc'));
+    
+    // Simple query without orderBy to avoid index requirement
+    const q = query(matchesRef);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const matchesList = snapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter(
-          (match) =>
-            match.user1Id === currentUser.uid || match.user2Id === currentUser.uid
-        );
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const matchesList = snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter(
+            (match) =>
+              match.user1Id === currentUser.uid || match.user2Id === currentUser.uid
+          );
 
-      setMatches(matchesList);
-      setLoading(false);
-    });
+        // Sort manually by matchedAt
+        matchesList.sort((a, b) => {
+          const timeA = a.matchedAt ? new Date(a.matchedAt).getTime() : 0;
+          const timeB = b.matchedAt ? new Date(b.matchedAt).getTime() : 0;
+          return timeB - timeA;
+        });
+
+        setMatches(matchesList);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error loading matches:', error);
+        setMatches([]);
+        setLoading(false);
+      }
+    );
 
     return unsubscribe;
   }, [currentUser]);

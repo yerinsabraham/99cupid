@@ -18,20 +18,37 @@ export default function MessagesPageV2() {
     if (!currentUser) return;
 
     const chatsRef = collection(db, 'chats');
+    
+    // Simple query without orderBy to avoid index requirement
     const q = query(
       chatsRef,
-      where('participants', 'array-contains', currentUser.uid),
-      orderBy('lastMessageAt', 'desc')
+      where('participants', 'array-contains', currentUser.uid)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const chatsList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setChats(chatsList);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const chatsList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        
+        // Sort manually by lastMessageAt
+        chatsList.sort((a, b) => {
+          const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+          const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+          return timeB - timeA;
+        });
+        
+        setChats(chatsList);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error loading chats:', error);
+        setChats([]);
+        setLoading(false);
+      }
+    );
 
     return unsubscribe;
   }, [currentUser]);
