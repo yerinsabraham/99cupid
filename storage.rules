@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Profile Images - Users can upload/update/delete their own photos
+    match /profileImages/{userId}/{imageFile} {
+      allow read: if true; // Anyone can view profile images
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
+                   && request.resource.contentType.matches('image/.*'); // Images only
+    }
+    
+    // Verification Images - Users can upload their own verification selfies
+    match /verificationImages/{userId}/{imageFile} {
+      allow read: if request.auth != null; // Only authenticated users can view
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
+                   && request.resource.contentType.matches('image/.*'); // Images only
+    }
+    
+    // Chat Images - Users can upload images in their chats
+    match /chatImages/{chatId}/{imageFile} {
+      allow read: if request.auth != null; // Only authenticated users
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024 // Max 10MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
