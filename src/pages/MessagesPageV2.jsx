@@ -78,7 +78,10 @@ export default function MessagesPageV2() {
       <div className="min-h-screen p-6 pb-24">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Messages</h1>
+          <div className="flex items-center space-x-2">
+            <MessageCircle className="w-6 h-6 text-pink-600 fill-pink-600" />
+            <h1 className="text-2xl font-bold text-gray-800">Messages</h1>
+          </div>
           <p className="text-gray-600 mt-1">Chat with your matches</p>
         </div>
 

@@ -54,7 +54,10 @@ export default function ProfilePage() {
       <div className="min-h-screen p-6 pb-24">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
+          <div className="flex items-center space-x-2">
+            <Heart className="w-6 h-6 text-pink-600 fill-pink-600" />
+            <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
+          </div>
           <button
             onClick={handleLogout}
             className="flex items-center space-x-2 px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-600 hover:bg-gray-50 transition-all duration-300"

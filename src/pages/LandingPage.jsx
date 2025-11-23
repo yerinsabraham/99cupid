@@ -110,93 +110,96 @@ export default function LandingPage() {
   const isValid = validateEmail(formData.email);
 
   // Success Modal Component
-  const SuccessModal = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center relative animate-scaleIn">
-        {/* Close button */}
-        <button
-          onClick={() => {
-            setSubmitted(false);
-            setFormData({ email: '', name: '', role: 'interested-user', referral: '' });
-          }}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X className="w-6 h-6" />
-        </button>
+  const SuccessModal = () => {
+    const [copied, setCopied] = useState(false);
 
-        {/* Success Icon */}
-        <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-          <Check className="w-10 h-10 text-white" />
-        </div>
+    const copyLink = () => {
+      navigator.clipboard.writeText('https://cupid-e5874.web.app/landing');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
 
-        {/* Title */}
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">
-          {isFoundingMember ? '🎉 Welcome, Founding Member!' : '✨ Thank You!'}
-        </h2>
-
-        {/* Message */}
-        {isFoundingMember ? (
-          <div className="bg-gradient-to-r from-pink-100 to-purple-100 border-2 border-pink-300 rounded-2xl p-6 mb-6">
-            <p className="text-lg font-semibold text-gray-800 mb-2">
-              Congratulations! You're one of our first 500 founding members 🚀
-            </p>
-            <p className="text-gray-700">
-              You'll receive <strong>6 months of free premium access</strong> when we launch!
-            </p>
-          </div>
-        ) : (
-          <div className="mb-6">
-            <p className="text-lg text-gray-700 mb-3">
-              Your email has been received successfully!
-            </p>
-            <p className="text-gray-600">
-              We've added you to our early access list. Check your inbox for a confirmation email.
-            </p>
-          </div>
-        )}
-
-        {/* Info Box */}
-        <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 mb-6">
-          <p className="text-sm text-pink-800">
-            <strong>Quick reminder:</strong> Messaging will be unlocked for subscribers at just <strong>$0.99/month</strong> when we launch.
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
-          <Link
-            to="/login"
-            className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg"
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center relative animate-scaleIn">
+          {/* Close button */}
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setFormData({ email: '', name: '', role: 'interested-user', referral: '' });
+            }}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            Sign Up Now
-          </Link>
-          
-          {/* Social Share */}
-          <div className="pt-4 border-t">
-            <p className="text-xs text-gray-600 mb-3">Share with friends:</p>
-            <div className="flex gap-2 justify-center">
-              <a
-                href={`https://twitter.com/intent/tweet?text=I just joined 99Cupid early access! Find love across borders for just $0.99/month 💕&url=https://cupid-e5874.web.app/landing`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-blue-500 text-white rounded-lg text-xs hover:bg-blue-600 transition-colors"
-              >
-                Twitter
-              </a>
-              <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=https://cupid-e5874.web.app/landing`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition-colors"
-              >
-                Facebook
-              </a>
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Success Icon */}
+          <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <Check className="w-10 h-10 text-white" />
+          </div>
+
+          {/* Title */}
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            {isFoundingMember ? '🎉 Welcome, Founding Member!' : '✨ Thank You!'}
+          </h2>
+
+          {/* Message */}
+          {isFoundingMember ? (
+            <div className="bg-gradient-to-r from-pink-100 to-purple-100 border-2 border-pink-300 rounded-2xl p-6 mb-6">
+              <p className="text-lg font-semibold text-gray-800 mb-2">
+                Congratulations! You're one of our first 500 founding members 🚀
+              </p>
+              <p className="text-gray-700">
+                You'll receive <strong>6 months of free premium access</strong> when we launch!
+              </p>
             </div>
+          ) : (
+            <div className="mb-6">
+              <p className="text-lg text-gray-700 mb-3">
+                Your email has been received successfully!
+              </p>
+              <p className="text-gray-600">
+                We've added you to our early access list. Check your inbox for a confirmation email.
+              </p>
+            </div>
+          )}
+
+          {/* Info Box */}
+          <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 mb-6">
+            <p className="text-sm text-pink-800">
+              <strong>Quick reminder:</strong> Messaging will be unlocked for subscribers at just <strong>$0.99/month</strong> when we launch.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3">
+            {/* Copy Link Button */}
+            <button
+              onClick={copyLink}
+              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-2"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-5 h-5" />
+                  Link Copied!
+                </>
+              ) : (
+                <>
+                  <Mail className="w-5 h-5" />
+                  Copy Link to Share
+                </>
+              )}
+            </button>
+            
+            {/* Share hint */}
+            <p className="text-xs text-gray-500">
+              Share on WhatsApp, Facebook, Twitter, or anywhere!
+            </p>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (submitted) {
     return <SuccessModal />;

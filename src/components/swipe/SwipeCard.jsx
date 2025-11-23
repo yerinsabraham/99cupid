@@ -96,7 +96,7 @@ export default function SwipeCard({ user, onSwipe, style }) {
         </div>
 
         {/* Profile Details */}
-        <div className="h-1/3 p-6 overflow-y-auto">
+        <div className="h-1/3 p-6 pb-24 overflow-y-auto">
           <p className="text-gray-700 mb-4 text-sm leading-relaxed">{user.bio}</p>
           
           {/* Interests */}
@@ -112,19 +112,19 @@ export default function SwipeCard({ user, onSwipe, style }) {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center space-x-6 px-6">
+        {/* Action Buttons - Positioned outside the scrollable area */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-6 px-6 pointer-events-none">
           <button
             onClick={() => onSwipe('left')}
-            className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 transition-all duration-300"
+            className="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 hover:scale-110 transition-all duration-300 pointer-events-auto"
           >
-            <X className="w-8 h-8 text-red-500" />
+            <X className="w-7 h-7 text-red-500" />
           </button>
           <button
             onClick={() => onSwipe('right')}
-            className="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full shadow-lg flex items-center justify-center hover:from-pink-600 hover:to-pink-700 transition-all duration-300"
+            className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full shadow-xl flex items-center justify-center hover:from-pink-600 hover:to-pink-700 hover:scale-110 transition-all duration-300 pointer-events-auto"
           >
-            <Heart className="w-8 h-8 text-white fill-white" />
+            <Heart className="w-7 h-7 text-white fill-white" />
           </button>
         </div>
       </div>
