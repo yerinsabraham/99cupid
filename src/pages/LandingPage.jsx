@@ -150,7 +150,7 @@ export default function LandingPage() {
                 Congratulations! You're one of our first 500 founding members 🚀
               </p>
               <p className="text-gray-700">
-                You'll receive <strong>6 months of free premium access</strong> when we launch!
+                You'll receive <strong>3 months of free full access</strong> and a special <strong>Founding Member badge</strong> on your profile when we launch!
               </p>
             </div>
           ) : (
@@ -167,7 +167,7 @@ export default function LandingPage() {
           {/* Info Box */}
           <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 mb-6">
             <p className="text-sm text-pink-800">
-              <strong>Quick reminder:</strong> Messaging will be unlocked for subscribers at just <strong>$0.99/month</strong> when we launch.
+              <strong>Quick reminder:</strong> Browse profiles for free. Messaging and full engagement features available for just <strong>$0.99/month</strong>.
             </p>
           </div>
 
@@ -220,7 +220,7 @@ export default function LandingPage() {
           <div className="space-y-8">
             <div className="inline-block px-4 py-2 bg-pink-100 rounded-full mb-4">
               <span className="text-pink-700 font-semibold text-sm">
-                🎉 First 500 get founding benefits!
+                🎉 First 500 get 3 months free + Founding Member status!
               </span>
             </div>
 
@@ -231,9 +231,12 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className="text-xl text-gray-600">
-              Join early. First <strong>500</strong> get founding benefits. 
-              Messaging unlocked for subscribers at just <strong className="text-pink-600">$0.99/month</strong>.
+            <p className="text-xl text-gray-600 mb-4">
+              Browse profiles for free. Message and connect for just <strong className="text-pink-600">$0.99/month</strong>.
+            </p>
+            
+            <p className="text-lg text-gray-700 font-semibold">
+              🎉 First 500 early users get 3 months full access for free and receive Founding Member status.
             </p>
 
             {/* Email Form */}
@@ -346,7 +349,7 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900">Only $0.99/mo</p>
-                  <p className="text-xs text-gray-600">Premium messaging</p>
+                  <p className="text-xs text-gray-600">Full access</p>
                 </div>
               </div>
             </div>
@@ -376,9 +379,9 @@ export default function LandingPage() {
             <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
               <MessageCircle className="w-7 h-7 text-purple-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Secure Chat</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Free Browsing</h3>
             <p className="text-gray-600">
-              Premium messaging at just $0.99/month. Connect with matches worldwide.
+              Browse profiles for free. Unlock messaging and full engagement features for just $0.99/month.
             </p>
           </div>
 
@@ -386,9 +389,9 @@ export default function LandingPage() {
             <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
               <Shield className="w-7 h-7 text-pink-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Founding Benefits</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Founding Member Status</h3>
             <p className="text-gray-600">
-              First 500 members get <strong>6 months free premium</strong> when we launch!
+              First 500 users get <strong>3 months free full access</strong> and a special Founding Member badge on their profile.
             </p>
           </div>
         </div>
@@ -404,13 +407,17 @@ export default function LandingPage() {
             Founding Members Program
           </h2>
           <p className="text-xl mb-6 text-pink-100">
-            First <strong>500</strong> people to sign up will be treated as Founding Members
+            First <strong>500</strong> early users become Founding Members
           </p>
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8">
-            <p className="text-lg">
-              <strong>Your benefit:</strong> 6 months of free premium access when we launch
-              (worth $5.94!)
+            <p className="text-lg mb-3">
+              <strong>Your benefits:</strong>
             </p>
+            <ul className="text-left space-y-2">
+              <li>✓ 3 months of free full access (worth $2.97)</li>
+              <li>✓ Exclusive Founding Member badge on your profile</li>
+              <li>✓ Recognition as a founding supporter of 99Cupid</li>
+            </ul>
           </div>
           <p className="text-pink-100">
             <strong>{Math.max(0, 500 - earlyUsersCount)}</strong> founding spots remaining
