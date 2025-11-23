@@ -69,20 +69,26 @@ export default function LandingPage() {
 
       await addDoc(collection(db, 'earlyUsers'), docData);
 
-      // Send confirmation email via EmailJS
-      const templateParams = {
-        from_email: '99Cupidlove@gmail.com',
-        to_email: formData.email,
-        to_name: formData.name || 'there',
-        founding_status: isFounder ? 'Founding Member' : 'Early Access',
-        founding_benefit: isFounder ? 'You are one of the first 500 founding members and will receive free premium access for 6 months when we launch!' : 'Join early to secure your spot!',
-      };
+      // Send confirmation email via EmailJS (non-blocking)
+      try {
+        const templateParams = {
+          to_name: formData.name || 'there',
+          to_email: formData.email,
+          founding_status: isFounder ? 'Founding Member' : 'Early Access',
+          founding_benefit: isFounder 
+            ? 'You are one of the first 500 founding members and will receive free premium access for 6 months when we launch!' 
+            : 'Join early to secure your spot!',
+        };
 
-      await emailjs.send(
-        'service_ccv3mn3',
-        'template_sm7bz89',
-        templateParams
-      );
+        await emailjs.send(
+          'service_ccv3mn3',
+          'template_sm7bz89',
+          templateParams
+        );
+      } catch (emailError) {
+        console.error('Email sending failed (non-critical):', emailError);
+        // Don't block user success - email failure is non-critical
+      }
 
       setSubmitted(true);
       setEarlyUsersCount(prev => prev + 1);

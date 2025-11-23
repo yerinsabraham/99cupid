@@ -37,9 +37,19 @@ Beautiful, responsive landing page with email collection, Firestore integration,
 ### Step 3: Create Email Template
 1. Go to **Email Templates**
 2. Click **Create New Template**
-3. Use this template:
+3. Configure the template settings:
 
 **Template Name:** 99Cupid Early Access Confirmation
+
+**To Email:** (IMPORTANT - Click "Edit" and enter exactly this)
+```
+{{to_email}}
+```
+
+**From Name:**
+```
+99Cupid Team
+```
 
 **Subject:** 
 ```
@@ -222,6 +232,11 @@ Before going live, test:
 6. ✅ Test social share buttons
 7. ✅ Try submitting duplicate email (should still work)
 
+**Note:** If you don't see the logo or latest changes:
+- **Hard refresh:** Press `Ctrl + Shift + R` (Windows) or `Cmd + Shift + R` (Mac)
+- **Firefox:** Press `Ctrl + F5` or clear cache in Settings → Privacy & Security → Clear Data
+- **Chrome:** Press `Ctrl + Shift + Delete` and clear cached images/files
+
 ---
 
 ## Deployment
@@ -294,19 +309,42 @@ https://www.facebook.com/sharer/sharer.php?u=https://cupid-e5874.web.app/landing
 ## Troubleshooting
 
 ### Emails not sending?
-1. Check EmailJS dashboard for errors
-2. Verify Gmail connection is active
-3. Check browser console for errors
-4. Ensure Public Key, Service ID, and Template ID are correct
+**Error: "The recipients address is empty" (Status 422)**
+
+This means the EmailJS template is not configured correctly. Fix:
+
+1. Go to EmailJS Dashboard → Email Templates
+2. Select your template (`template_sm7bz89`)
+3. Click on **Settings** tab
+4. Find the **"To Email"** field
+5. **CRITICAL:** Enter exactly: `{{to_email}}` (with the double curly braces)
+6. Save the template
+
+Without `{{to_email}}` in the "To Email" field, EmailJS doesn't know where to send emails.
+
+**Other checks:**
+1. Verify Gmail connection is active in Email Services
+2. Check browser console for specific error messages
+3. Ensure Public Key, Service ID, and Template ID are correct in code
 
 ### Landing page not showing?
-1. Clear browser cache
+1. Clear browser cache (Ctrl + Shift + R or Ctrl + F5)
 2. Check URL: https://cupid-e5874.web.app/landing
 3. Verify deployment completed successfully
+
+### Logo not showing?
+- Hard refresh your browser (Ctrl + Shift + R)
+- Clear browser cache completely
+- Different browsers cache differently - try in incognito/private mode first
 
 ### Counter not updating?
 - Firestore security rules must allow read access
 - Check browser console for Firestore errors
+
+### Modal not appearing (Firefox)?
+- Clear Firefox cache: Settings → Privacy & Security → Clear Data
+- Try hard refresh: Ctrl + F5
+- Test in private browsing mode first
 
 ---
 
