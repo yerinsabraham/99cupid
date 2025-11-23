@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HeartLoader from './components/common/HeartLoader';
 
 // Pages
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -48,6 +49,9 @@ function AuthGuard({ children }) {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Public Landing Page */}
+      <Route path="/landing" element={<LandingPage />} />
+      
       {/* Public Routes - Auth Pages (redirect if authenticated) */}
       <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
       <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
