@@ -95,5 +95,13 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if false;
     }
+    
+    // Early Users Collection - Landing page signups (PUBLIC ACCESS)
+    match /earlyUsers/{docId} {
+      allow read: if true; // Allow anyone to read count
+      allow create: if true; // Allow anyone to submit email
+      allow update: if false;
+      allow delete: if false;
+    }
   }
 }

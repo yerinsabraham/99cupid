@@ -46,20 +46,111 @@ Beautiful, responsive landing page with email collection, Firestore integration,
 Thanks for joining 99Cupid — early access confirmed
 ```
 
-**Email Body:**
+**Email Body (HTML):**
 ```html
-Hi {{to_name}},
-
-Thanks for joining 99Cupid — we've added you to our early access list.
-
-🎉 {{founding_status}}: {{founding_benefit}}
-
-Reminder: Messaging will be available to subscribers for $0.99/month at launch.
-
-We'll keep you posted. Meanwhile, feel free to reply to this email with any questions.
-
-— 99Cupid Team
-99Cupidlove@gmail.com
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>99Cupid Early Access</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #fdf2f8 0%, #faf5ff 50%, #fdf2f8 100%); min-height: 100vh;">
+  
+  <!-- Container -->
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        
+        <!-- Email Card -->
+        <table role="presentation" style="max-width: 600px; width: 100%; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(236, 72, 153, 0.1); overflow: hidden;">
+          
+          <!-- Header with Gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #ec4899 0%, #9333ea 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: white; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
+                99<span style="font-size: 28px;">💕</span>Cupid
+              </h1>
+              <p style="margin: 10px 0 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500;">
+                Early Access Confirmed
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              
+              <!-- Greeting -->
+              <p style="margin: 0 0 20px 0; color: #1f2937; font-size: 18px; line-height: 1.6;">
+                Hi <strong>{{to_name}}</strong>,
+              </p>
+              
+              <!-- Message -->
+              <p style="margin: 0 0 25px 0; color: #374151; font-size: 16px; line-height: 1.7;">
+                Thanks for joining <strong style="color: #ec4899;">99Cupid</strong> — we've added you to our early access list.
+              </p>
+              
+              <!-- Status Badge -->
+              <table role="presentation" style="width: 100%; margin: 0 0 25px 0;">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 100%); border-left: 4px solid #ec4899; padding: 20px; border-radius: 12px;">
+                    <p style="margin: 0; color: #be185d; font-size: 16px; line-height: 1.6;">
+                      🎉 <strong>{{founding_status}}</strong>: {{founding_benefit}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Reminder -->
+              <p style="margin: 0 0 25px 0; color: #6b7280; font-size: 15px; line-height: 1.6; padding: 15px; background: #f9fafb; border-radius: 10px;">
+                💬 <strong>Reminder:</strong> Messaging will be available to subscribers for <strong style="color: #ec4899;">$0.99/month</strong> at launch.
+              </p>
+              
+              <!-- Call to Action -->
+              <table role="presentation" style="width: 100%; margin: 0 0 25px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="https://cupid-e5874.web.app" style="display: inline-block; background: linear-gradient(135deg, #ec4899 0%, #9333ea 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 25px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);">
+                      Visit 99Cupid →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Footer Message -->
+              <p style="margin: 0; color: #6b7280; font-size: 15px; line-height: 1.6;">
+                We'll keep you posted. Meanwhile, feel free to reply to this email with any questions.
+              </p>
+              
+            </td>
+          </tr>
+          
+          <!-- Email Footer -->
+          <tr>
+            <td style="background: #fafafa; padding: 30px; text-align: center; border-top: 1px solid #f0f0f0;">
+              <p style="margin: 0 0 8px 0; color: #374151; font-size: 15px; font-weight: 600;">
+                — 99Cupid Team
+              </p>
+              <p style="margin: 0 0 15px 0;">
+                <a href="mailto:99Cupidlove@gmail.com" style="color: #ec4899; text-decoration: none; font-size: 14px;">
+                  99Cupidlove@gmail.com
+                </a>
+              </p>
+              <p style="margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.5;">
+                Find love across borders for just $0.99/month 💕
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+        
+      </td>
+    </tr>
+  </table>
+  
+</body>
+</html>
 ```
 
 4. Save the template and note your **Template ID** (e.g., `template_xyz789`)

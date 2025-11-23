@@ -20,7 +20,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     // Initialize EmailJS
-    emailjs.init('YOUR_EMAILJS_PUBLIC_KEY'); // Replace with your EmailJS public key
+    emailjs.init('4dLv5uTZcYW3SmMYn');
     
     // Get current count of early users
     loadEarlyUsersCount();
@@ -71,6 +71,7 @@ export default function LandingPage() {
 
       // Send confirmation email via EmailJS
       const templateParams = {
+        from_email: '99Cupidlove@gmail.com',
         to_email: formData.email,
         to_name: formData.name || 'there',
         founding_status: isFounder ? 'Founding Member' : 'Early Access',
@@ -78,8 +79,8 @@ export default function LandingPage() {
       };
 
       await emailjs.send(
-        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+        'service_ccv3mn3',
+        'template_sm7bz89',
         templateParams
       );
 
@@ -102,123 +103,110 @@ export default function LandingPage() {
 
   const isValid = validateEmail(formData.email);
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
-        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8 text-center relative overflow-hidden">
-          {/* Animated 99 logos */}
-          <div className="absolute top-4 right-4 w-8 h-8 opacity-20 animate-bounce">
-            <img src="/99logo.png" alt="99" className="w-full h-full" />
-          </div>
-          <div className="absolute bottom-4 left-4 w-6 h-6 opacity-20 animate-pulse">
-            <img src="/99logo.png" alt="99" className="w-full h-full" />
-          </div>
+  // Success Modal Component
+  const SuccessModal = () => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center relative animate-scaleIn">
+        {/* Close button */}
+        <button
+          onClick={() => {
+            setSubmitted(false);
+            setFormData({ email: '', name: '', role: 'interested-user', referral: '' });
+          }}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X className="w-6 h-6" />
+        </button>
 
-          <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-            <Check className="w-10 h-10 text-white" />
-          </div>
+        {/* Success Icon */}
+        <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+          <Check className="w-10 h-10 text-white" />
+        </div>
 
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            {isFoundingMember ? '🎉 Welcome, Founding Member!' : '✨ You\'re On The List!'}
-          </h2>
+        {/* Title */}
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          {isFoundingMember ? '🎉 Welcome, Founding Member!' : '✨ Thank You!'}
+        </h2>
 
-          {isFoundingMember ? (
-            <div className="bg-gradient-to-r from-pink-100 to-purple-100 border-2 border-pink-300 rounded-2xl p-6 mb-6">
-              <p className="text-lg font-semibold text-gray-800 mb-2">
-                Congratulations! You're one of our first 500 founding members 🚀
-              </p>
-              <p className="text-gray-700">
-                You'll receive <strong>6 months of free premium access</strong> when we launch!
-              </p>
-            </div>
-          ) : (
-            <p className="text-gray-600 mb-6">
-              Thanks for joining 99Cupid! We've added you to our early access list.
-              Check your email for confirmation.
+        {/* Message */}
+        {isFoundingMember ? (
+          <div className="bg-gradient-to-r from-pink-100 to-purple-100 border-2 border-pink-300 rounded-2xl p-6 mb-6">
+            <p className="text-lg font-semibold text-gray-800 mb-2">
+              Congratulations! You're one of our first 500 founding members 🚀
             </p>
-          )}
-
-          <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 mb-6">
-            <p className="text-sm text-pink-800">
-              <strong>Quick reminder:</strong> Messaging will be unlocked for subscribers at just <strong>$0.99/month</strong> when we launch.
+            <p className="text-gray-700">
+              You'll receive <strong>6 months of free premium access</strong> when we launch!
             </p>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              to="/login"
-              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all"
-            >
-              Sign Up Now
-            </Link>
-            <button
-              onClick={() => {
-                setSubmitted(false);
-                setFormData({ email: '', name: '', role: 'interested-user', referral: '' });
-              }}
-              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
-            >
-              Submit Another
-            </button>
+        ) : (
+          <div className="mb-6">
+            <p className="text-lg text-gray-700 mb-3">
+              Your email has been received successfully!
+            </p>
+            <p className="text-gray-600">
+              We've added you to our early access list. Check your inbox for a confirmation email.
+            </p>
           </div>
+        )}
 
-          {/* Social Share Buttons */}
-          <div className="mt-8 pt-6 border-t">
-            <p className="text-sm text-gray-600 mb-3">Share with friends:</p>
-            <div className="flex gap-3 justify-center">
+        {/* Info Box */}
+        <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 mb-6">
+          <p className="text-sm text-pink-800">
+            <strong>Quick reminder:</strong> Messaging will be unlocked for subscribers at just <strong>$0.99/month</strong> when we launch.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-3">
+          <Link
+            to="/login"
+            className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg"
+          >
+            Sign Up Now
+          </Link>
+          
+          {/* Social Share */}
+          <div className="pt-4 border-t">
+            <p className="text-xs text-gray-600 mb-3">Share with friends:</p>
+            <div className="flex gap-2 justify-center">
               <a
                 href={`https://twitter.com/intent/tweet?text=I just joined 99Cupid early access! Find love across borders for just $0.99/month 💕&url=https://cupid-e5874.web.app/landing`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                className="px-3 py-2 bg-blue-500 text-white rounded-lg text-xs hover:bg-blue-600 transition-colors"
               >
-                Share on Twitter
+                Twitter
               </a>
               <a
                 href={`https://www.facebook.com/sharer/sharer.php?u=https://cupid-e5874.web.app/landing`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition-colors"
               >
-                Share on Facebook
+                Facebook
               </a>
             </div>
           </div>
         </div>
       </div>
-    );
+    </div>
+  );
+
+  if (submitted) {
+    return <SuccessModal />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <img src="/applogo.png" alt="99Cupid" className="h-10" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              99Cupid
-            </span>
-          </div>
-          <Link
-            to="/login"
-            className="px-4 py-2 text-pink-600 font-semibold hover:bg-pink-50 rounded-lg transition-colors"
-          >
-            Sign In
-          </Link>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <img src="/applogo.png" alt="99Cupid" className="h-10" />
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 py-20 relative">
-        {/* Floating 99 logos */}
-        <div className="absolute top-10 right-10 w-12 h-12 opacity-10 animate-bounce" style={{ animationDelay: '0.5s' }}>
-          <img src="/99logo.png" alt="99" className="w-full h-full" />
-        </div>
-        <div className="absolute bottom-20 left-10 w-10 h-10 opacity-10 animate-pulse" style={{ animationDelay: '1s' }}>
-          <img src="/99logo.png" alt="99" className="w-full h-full" />
-        </div>
-
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="inline-block px-4 py-2 bg-pink-100 rounded-full mb-4">
@@ -331,8 +319,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Hero Image */}
-          <div className="relative">
+          {/* Hero Image - Hidden on mobile */}
+          <div className="relative hidden md:block">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl">
               <img
                 src="/newFrame 57.jpg.png"
@@ -359,10 +347,6 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <section className="max-w-7xl mx-auto px-6 py-20 relative">
-        <div className="absolute top-1/2 left-1/4 w-8 h-8 opacity-10 animate-spin" style={{ animationDuration: '10s' }}>
-          <img src="/99logo.png" alt="99" className="w-full h-full" />
-        </div>
-
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Join Early?</h2>
           <p className="text-xl text-gray-600">Be part of something special from day one</p>
@@ -403,10 +387,6 @@ export default function LandingPage() {
 
       {/* Founding Members Section */}
       <section className="max-w-4xl mx-auto px-6 py-20 relative">
-        <div className="absolute top-10 right-10 w-10 h-10 opacity-10 animate-bounce">
-          <img src="/99logo.png" alt="99" className="w-full h-full" />
-        </div>
-
         <div className="bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl p-12 text-center text-white shadow-2xl">
           <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <Heart className="w-8 h-8 text-white fill-white" />
@@ -467,10 +447,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <img src="/applogo.png" alt="99Cupid" className="h-8" />
-                <span className="text-xl font-bold">99Cupid</span>
-              </div>
+              <img src="/applogo.png" alt="99Cupid" className="h-8 mb-4" />
               <p className="text-gray-400 text-sm">
                 Find love across borders for just $0.99/month
               </p>
