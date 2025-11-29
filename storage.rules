@@ -3,28 +3,46 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
+    // Helper functions
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 5 * 1024 * 1024; // Max 5MB
+    }
+    
+    function isValidProfileImage() {
+      return isValidImage() && 
+             request.resource.size > 50 * 1024; // Min 50KB
+    }
+    
     // Profile Images - Users can upload/update/delete their own photos
-    match /profileImages/{userId}/{imageFile} {
-      allow read: if true; // Anyone can view profile images
-      allow write: if request.auth != null && request.auth.uid == userId
-                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
-                   && request.resource.contentType.matches('image/.*'); // Images only
+    match /profileImages/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) && isValidProfileImage();
     }
     
     // Verification Images - Users can upload their own verification selfies
-    match /verificationImages/{userId}/{imageFile} {
-      allow read: if request.auth != null; // Only authenticated users can view
-      allow write: if request.auth != null && request.auth.uid == userId
-                   && request.resource.size < 5 * 1024 * 1024 // Max 5MB
-                   && request.resource.contentType.matches('image/.*'); // Images only
+    match /verificationImages/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) && isValidImage();
     }
     
     // Chat Images - Users can upload images in their chats
-    match /chatImages/{chatId}/{imageFile} {
-      allow read: if request.auth != null; // Only authenticated users
-      allow write: if request.auth != null
-                   && request.resource.size < 10 * 1024 * 1024 // Max 10MB
-                   && request.resource.contentType.matches('image/.*');
+    match /chatImages/{chatId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImage();
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }

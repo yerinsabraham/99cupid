@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { Heart, MessageCircle, Sparkles } from 'lucide-react';
+import { Heart, MessageCircle, Sparkles, CheckCircle } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import HeartLoader from '../components/common/HeartLoader';
 
@@ -139,10 +139,19 @@ export default function MatchesPageV2() {
 
                     {/* Match Badge */}
                     <div className="absolute top-2 right-2">
-                      <div className="bg-pink-600 rounded-full p-2">
+                      <div className="bg-pink-600 rounded-full p-2 shadow-lg">
                         <Sparkles className="w-4 h-4 text-white" />
                       </div>
                     </div>
+
+                    {/* Verified Badge */}
+                    {match.user1IsVerified || match.user2IsVerified ? (
+                      <div className="absolute top-2 left-2">
+                        <div className="bg-blue-500 rounded-full p-1.5 shadow-lg flex items-center space-x-1">
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* Info */}

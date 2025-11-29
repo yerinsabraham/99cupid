@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import emailjs from '@emailjs/browser';
-import { Heart, Shield, MessageCircle, Sparkles, Check, X, Loader, Mail, Users, Lock } from 'lucide-react';
+import { Heart, Shield, MessageCircle, Sparkles, Check, X, Loader, Mail, Users, Lock, Globe, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
@@ -205,6 +205,13 @@ export default function LandingPage() {
     return <SuccessModal />;
   }
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-50">
       {/* Header */}
@@ -218,25 +225,20 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-6 py-20 relative">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
-            <div className="inline-block px-4 py-2 bg-pink-100 rounded-full mb-4">
-              <span className="text-pink-700 font-semibold text-sm">
-                🎉 First 500 get 3 months free + Founding Member status!
-              </span>
-            </div>
-
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
-              99Cupid —{' '}
+              Dating for{' '}
               <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                Find love across borders
+                99¢ per month.
               </span>
+              {' '}Yes, really.
             </h1>
 
-            <p className="text-xl text-gray-600 mb-4">
-              Browse profiles for free. Message and connect for just <strong className="text-pink-600">$0.99/month</strong>.
+            <p className="text-xl text-gray-600">
+              Full access, no upsells, no games, just genuine connections at a price everyone can afford.
             </p>
-            
-            <p className="text-lg text-gray-700 font-semibold">
-              🎉 First 500 early users get 3 months full access for free and receive Founding Member status.
+
+            <p className="text-lg text-gray-700">
+              Get launch updates
             </p>
 
             {/* Email Form */}
@@ -259,12 +261,12 @@ export default function LandingPage() {
                   {loading ? (
                     <>
                       <Loader className="w-5 h-5 animate-spin" />
-                      Joining...
+                      Sending...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-5 h-5" />
-                      Get Early Access
+                      <Mail className="w-5 h-5" />
+                      Notify Me
                     </>
                   )}
                 </button>
@@ -357,104 +359,238 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20 relative">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Join Early?</h2>
-          <p className="text-xl text-gray-600">Be part of something special from day one</p>
+      {/* Features Grid Section - Below Hero */}
+      <section className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Full Access Card */}
+          <button
+            onClick={() => scrollToSection('full-access-section')}
+            className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all text-left hover:scale-105 active:scale-95"
+          >
+            <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-3">
+              <MessageCircle className="w-6 h-6 text-pink-600" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">Full Access</h3>
+            <p className="text-sm text-gray-600">Chat, swipe, and match included</p>
+          </button>
+
+          {/* Safety First Card */}
+          <button
+            onClick={() => scrollToSection('safety-section')}
+            className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all text-left hover:scale-105 active:scale-95"
+          >
+            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+              <Shield className="w-6 h-6 text-purple-600" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">Safety First</h3>
+            <p className="text-sm text-gray-600">Verification and reporting</p>
+          </button>
+
+          {/* Global Card */}
+          <button
+            onClick={() => scrollToSection('global-section')}
+            className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all text-left hover:scale-105 active:scale-95"
+          >
+            <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-3">
+              <Globe className="w-6 h-6 text-teal-600" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">Global</h3>
+            <p className="text-sm text-gray-600">Filipino Canadian story, global reach</p>
+          </button>
+
+          {/* No Upsells Card */}
+          <button
+            onClick={() => scrollToSection('no-upsells-section')}
+            className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all text-left hover:scale-105 active:scale-95"
+          >
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3">
+              <DollarSign className="w-6 h-6 text-green-600" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">No Upsells</h3>
+            <p className="text-sm text-gray-600">One price, no surprises</p>
+          </button>
         </div>
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
-              <Sparkles className="w-7 h-7 text-pink-600" />
+      {/* Full Access Section */}
+      <section id="full-access-section" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mb-6">
+              <MessageCircle className="w-8 h-8 text-pink-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Early Access</h3>
-            <p className="text-gray-600">
-              Be among the first to experience 99Cupid. Shape the future of cross-border dating.
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Full Access Included</h2>
+            <p className="text-xl text-gray-600 mb-6">
+              Everything you need to find love, all for one simple price.
             </p>
+            <ul className="space-y-4 text-gray-700">
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-pink-600 flex-shrink-0 mt-1" />
+                <span><strong>Unlimited swipes</strong> - Browse profiles without restrictions</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-pink-600 flex-shrink-0 mt-1" />
+                <span><strong>Unlimited messaging</strong> - Chat with all your matches</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-pink-600 flex-shrink-0 mt-1" />
+                <span><strong>See who likes you</strong> - Know who's interested</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-pink-600 flex-shrink-0 mt-1" />
+                <span><strong>Advanced filters</strong> - Find exactly what you're looking for</span>
+              </li>
+            </ul>
           </div>
-
-          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
-              <MessageCircle className="w-7 h-7 text-purple-600" />
+          <div className="hidden md:block relative">
+            <div className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-3xl p-8 shadow-xl">
+              <div className="bg-white rounded-2xl p-6 text-center">
+                <div className="text-5xl font-bold text-pink-600 mb-2">$0.99</div>
+                <p className="text-gray-600">per month</p>
+                <p className="text-sm text-gray-500 mt-4">No hidden fees, no surprises</p>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Free Browsing</h3>
-            <p className="text-gray-600">
-              Browse profiles for free. Unlock messaging and full engagement features for just $0.99/month.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
-              <Shield className="w-7 h-7 text-pink-600" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Founding Member Status</h3>
-            <p className="text-gray-600">
-              First 500 users get <strong>3 months free full access</strong> and a special Founding Member badge on their profile.
-            </p>
           </div>
         </div>
       </section>
 
-      {/* Founding Members Section */}
-      <section className="max-w-4xl mx-auto px-6 py-20 relative">
-        <div className="bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl p-12 text-center text-white shadow-2xl">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Heart className="w-8 h-8 text-white fill-white" />
+      {/* Safety First Section */}
+      <section id="safety-section" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="order-2 md:order-1 hidden md:block">
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl p-12 shadow-xl">
+              <Shield className="w-20 h-20 text-purple-600 mx-auto" />
+            </div>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Founding Members Program
-          </h2>
-          <p className="text-xl mb-6 text-pink-100">
-            First <strong>500</strong> early users become Founding Members
-          </p>
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8">
-            <p className="text-lg mb-3">
-              <strong>Your benefits:</strong>
+          <div className="order-1 md:order-2">
+            <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
+              <Shield className="w-8 h-8 text-purple-600" />
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Safety First</h2>
+            <p className="text-xl text-gray-600 mb-6">
+              Your safety and security are our top priorities.
             </p>
-            <ul className="text-left space-y-2">
-              <li>✓ 3 months of free full access (worth $2.97)</li>
-              <li>✓ Exclusive Founding Member badge on your profile</li>
-              <li>✓ Recognition as a founding supporter of 99Cupid</li>
+            <ul className="space-y-4 text-gray-700">
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
+                <span><strong>Photo verification</strong> - Verified profiles you can trust</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
+                <span><strong>Report & block</strong> - Easy tools to stay safe</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
+                <span><strong>24/7 moderation</strong> - Real people reviewing reports</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
+                <span><strong>Privacy controls</strong> - You decide what to share</span>
+              </li>
             </ul>
           </div>
-          <p className="text-pink-100">
-            <strong>{Math.max(0, 500 - earlyUsersCount)}</strong> founding spots remaining
-          </p>
+        </div>
+      </section>
+
+      {/* Global Section */}
+      <section id="global-section" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mb-6">
+              <Globe className="w-8 h-8 text-teal-600" />
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Global Connections</h2>
+            <p className="text-xl text-gray-600 mb-6">
+              Born from a Filipino-Canadian love story, built for the world.
+            </p>
+            <ul className="space-y-4 text-gray-700">
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-teal-600 flex-shrink-0 mt-1" />
+                <span><strong>Cross-border dating</strong> - Connect across countries and cultures</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-teal-600 flex-shrink-0 mt-1" />
+                <span><strong>Cultural celebration</strong> - Embrace diverse backgrounds</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-teal-600 flex-shrink-0 mt-1" />
+                <span><strong>International community</strong> - Meet people from around the world</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-teal-600 flex-shrink-0 mt-1" />
+                <span><strong>Language support</strong> - Connect in your native tongue</span>
+              </li>
+            </ul>
+          </div>
+          <div className="hidden md:block">
+            <div className="bg-gradient-to-br from-teal-100 to-blue-100 rounded-3xl p-12 shadow-xl">
+              <Globe className="w-20 h-20 text-teal-600 mx-auto" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* No Upsells Section */}
+      <section id="no-upsells-section" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="order-2 md:order-1 hidden md:block">
+            <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-3xl p-12 shadow-xl">
+              <DollarSign className="w-20 h-20 text-green-600 mx-auto" />
+            </div>
+          </div>
+          <div className="order-1 md:order-2">
+            <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
+              <DollarSign className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">No Hidden Costs</h2>
+            <p className="text-xl text-gray-600 mb-6">
+              One simple price. No tricks, no traps, no surprise charges.
+            </p>
+            <ul className="space-y-4 text-gray-700">
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                <span><strong>Transparent pricing</strong> - $0.99/month, that's it</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                <span><strong>No premium tiers</strong> - Everyone gets the same features</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                <span><strong>Cancel anytime</strong> - No commitment, no penalties</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                <span><strong>No in-app purchases</strong> - Everything's included</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="max-w-4xl mx-auto px-6 py-20">
-        <div className="bg-white rounded-3xl p-12 shadow-2xl text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="bg-white rounded-3xl p-12 shadow-2xl text-center relative overflow-hidden">
+          {/* Keep existing illustration */}
+          <div className="hidden md:block absolute -bottom-10 -right-10 opacity-10">
+            <img src="/newFrame 57.jpg.png" alt="" className="w-64 h-64 object-cover" />
+          </div>
+          
+          <h2 className="text-3xl font-bold text-gray-900 mb-4 relative z-10">
             Ready to Find Love?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Join now and secure your founding member benefits
+          <p className="text-xl text-gray-600 mb-8 relative z-10">
+            Start your journey to genuine connections today
           </p>
 
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-pink-500 transition-colors"
-                required
-              />
-              <button
-                type="submit"
-                disabled={!isValid || loading}
-                className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-              >
-                {loading ? 'Joining...' : 'Get Started'}
-              </button>
-            </div>
-          </form>
+          <div className="relative z-10">
+            <Link
+              to="/signup"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg"
+            >
+              Get Started - Only $0.99/month
+            </Link>
+          </div>
         </div>
       </section>
 

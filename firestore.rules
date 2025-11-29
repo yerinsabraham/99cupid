@@ -3,33 +3,43 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if user is authenticated
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Helper function to check if user owns the resource
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
     
-    // Users Collection - Basic auth info
+    function getUser(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUser(request.auth.uid).isAdmin == true;
+    }
+    
+    function isChatParticipant(chatId) {
+      let chatDoc = get(/databases/$(database)/documents/chats/$(chatId)).data;
+      return isAuthenticated() && (
+        chatDoc.user1Id == request.auth.uid || 
+        chatDoc.user2Id == request.auth.uid
+      );
+    }
+    
+    // Users Collection - Strict access control
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (
+        isOwner(userId) || 
+        resource.data.accountStatus != 'deleted'
+      );
       allow create: if isAuthenticated() && isOwner(userId);
       allow update: if isAuthenticated() && isOwner(userId);
-      allow delete: if isAuthenticated() && isOwner(userId);
+      allow delete: if false; // Soft delete only via admin
     }
     
-    // Profiles Collection - Detailed user profiles
-    match /profiles/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update: if isAuthenticated() && isOwner(userId);
-      allow delete: if isAuthenticated() && isOwner(userId);
-    }
-    
-    // Matches Collection - Mutual likes
+    // Matches Collection - Only matched users
     match /matches/{matchId} {
       allow read: if isAuthenticated() && 
                   (resource.data.user1Id == request.auth.uid || 
@@ -43,65 +53,82 @@ service cloud.firestore {
                      resource.data.user2Id == request.auth.uid);
     }
     
-    // Messages Collection - Chat messages
-    match /chats/{chatId}/messages/{messageId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.senderId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
-    }
-    
-    // Chat Metadata Collection
+    // Chats Collection - Only participants can read
     match /chats/{chatId} {
-      allow read: if isAuthenticated() && 
-                  (resource.data.user1Id == request.auth.uid || 
-                   resource.data.user2Id == request.auth.uid);
+      allow read: if isChatParticipant(chatId);
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && 
-                    (resource.data.user1Id == request.auth.uid || 
-                     resource.data.user2Id == request.auth.uid);
-      allow delete: if isAuthenticated() && 
-                    (resource.data.user1Id == request.auth.uid || 
-                     resource.data.user2Id == request.auth.uid);
+      allow update: if isChatParticipant(chatId);
+      allow delete: if isChatParticipant(chatId);
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isChatParticipant(chatId);
+        allow create: if isChatParticipant(chatId) && 
+                      request.resource.data.senderId == request.auth.uid &&
+                      request.resource.data.timestamp == request.time;
+        allow update: if isChatParticipant(chatId) && 
+                      resource.data.senderId == request.auth.uid;
+        allow delete: if isOwner(resource.data.senderId);
+      }
     }
     
     // Verification Requests Collection
     match /verifications/{verificationId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && isOwner(resource.data.userId);
+      allow update: if isAdmin();
+      allow delete: if false;
     }
     
-    // Reports Collection
+    // Reports Collection - Admin only
     match /reports/{reportId} {
-      allow read: if false; // Only admins (handled in backend)
+      allow read: if isAdmin();
       allow create: if isAuthenticated();
-      allow update: if false; // Only admins
-      allow delete: if false; // Only admins
+      allow update: if isAdmin();
+      allow delete: if false;
     }
     
-    // Likes Collection - Track who liked whom
+    // Likes Collection
     match /likes/{likeId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(resource.data.fromUserId);
       allow delete: if isAuthenticated() && resource.data.fromUserId == request.auth.uid;
+      allow update: if false;
     }
     
-    // Swipes Collection - Track all swipes for analytics
+    // Swipes Collection
     match /swipes/{swipeId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(resource.data.userId);
       allow update: if false;
       allow delete: if false;
     }
     
-    // Early Users Collection - Landing page signups (PUBLIC ACCESS)
+    // Early Users Collection - Landing page signups
     match /earlyUsers/{docId} {
-      allow read: if true; // Allow anyone to read count
-      allow create: if true; // Allow anyone to submit email
+      allow read: if true;
+      allow create: if true;
       allow update: if false;
       allow delete: if false;
+    }
+    
+    // Block users collection (if needed)
+    match /blocks/{blockId} {
+      allow read: if isAuthenticated() && (
+        resource.data.blockerId == request.auth.uid ||
+        resource.data.blockedId == request.auth.uid
+      );
+      allow create: if isAuthenticated() && isOwner(resource.data.blockerId);
+      allow delete: if isAuthenticated() && resource.data.blockerId == request.auth.uid;
+      allow update: if false;
+    }
+    
+    // Catch-all - deny everything else
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

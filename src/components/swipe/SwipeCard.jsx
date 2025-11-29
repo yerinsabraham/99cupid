@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { Heart, X, MapPin, CheckCircle } from 'lucide-react';
+import { Heart, X, MapPin, CheckCircle, ShieldAlert, MoreVertical } from 'lucide-react';
+import { BlockService, ReportService } from '../../services/BlockReportService';
 
-export default function SwipeCard({ user, onSwipe, style }) {
+export default function SwipeCard({ user, onSwipe, style, disabled = false }) {
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [showMenu, setShowMenu] = useState(false);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
   const onTouchStart = (e) => {
+    if (disabled) return;
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
     setIsDragging(true);
@@ -75,9 +78,43 @@ export default function SwipeCard({ user, onSwipe, style }) {
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           
+          {/* Top Right Menu Button */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="bg-white/80 hover:bg-white rounded-full p-2 transition-all shadow-lg"
+            >
+              <MoreVertical className="w-5 h-5 text-gray-700" />
+            </button>
+
+            {/* Menu Dropdown */}
+            {showMenu && (
+              <div className="absolute top-12 right-0 bg-white rounded-2xl shadow-2xl overflow-hidden z-50">
+                <button
+                  onClick={async () => {
+                    await ReportService.reportUser(user.uid, 'current-user', 'other', 'User reported');
+                    setShowMenu(false);
+                  }}
+                  className="block w-full text-left px-6 py-3 hover:bg-red-50 text-red-600 font-medium flex items-center space-x-2 border-b"
+                >
+                  <ShieldAlert className="w-4 h-4" />
+                  <span>Report</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                  }}
+                  className="block w-full text-left px-6 py-3 hover:bg-gray-50 text-gray-700 font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Verified Badge */}
-          {user.isVerifiedAccount && (
-            <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full flex items-center space-x-1 text-sm font-semibold">
+          {user.isVerified && (
+            <div className="absolute top-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-full flex items-center space-x-1 text-sm font-semibold shadow-lg">
               <CheckCircle className="w-4 h-4" />
               <span>Verified</span>
             </div>
@@ -101,7 +138,7 @@ export default function SwipeCard({ user, onSwipe, style }) {
           
           {/* Interests */}
           <div className="flex flex-wrap gap-2">
-            {user.interests.map((interest, index) => (
+            {user.interests?.slice(0, 5).map((interest, index) => (
               <span
                 key={index}
                 className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium"

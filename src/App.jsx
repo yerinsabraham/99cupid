@@ -17,6 +17,8 @@ import MatchesPage from './pages/MatchesPageV2';
 import MessagesPage from './pages/MessagesPageV2';
 import ChatPage from './pages/ChatPage';
 import VerificationPage from './pages/VerificationPage';
+import SubscriptionPage from './pages/SubscriptionPage';
+import AdminPanelPage from './pages/AdminPanelPage';
 
 /**
  * AuthGuard - Redirects authenticated users away from auth pages
@@ -118,6 +120,24 @@ function AppRoutes() {
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
             <VerificationPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/subscription"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <SubscriptionPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <AdminPanelPage />
           </ProtectedRoute>
         }
       />
