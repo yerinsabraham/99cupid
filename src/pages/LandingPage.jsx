@@ -29,9 +29,12 @@ export default function LandingPage() {
   const loadEarlyUsersCount = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'earlyUsers'));
-      setEarlyUsersCount(snapshot.size);
+      // Start count at 525 and add actual signups from database
+      setEarlyUsersCount(525 + snapshot.size);
     } catch (err) {
       console.error('Error loading count:', err);
+      // If error, just show 525 as baseline
+      setEarlyUsersCount(525);
     }
   };
 
@@ -52,8 +55,8 @@ export default function LandingPage() {
     setLoading(true);
 
     try {
-      // Check if user will be founding member (first 500)
-      const isFounder = earlyUsersCount < 500;
+      // Check if user will be founding member (first 1000)
+      const isFounder = earlyUsersCount < 1000;
       setIsFoundingMember(isFounder);
 
       // Save to Firestore
@@ -76,7 +79,7 @@ export default function LandingPage() {
           to_email: formData.email,
           founding_status: isFounder ? 'Founding Member' : 'Early Access',
           founding_benefit: isFounder 
-            ? 'You are one of the first 500 founding members and will receive free premium access for 6 months when we launch!' 
+            ? 'You are one of the first 1000 founding members and will receive free premium access for 6 months when we launch!' 
             : 'Join early to secure your spot!',
         };
 
@@ -122,17 +125,6 @@ export default function LandingPage() {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center relative animate-scaleIn">
-          {/* Close button */}
-          <button
-            onClick={() => {
-              setSubmitted(false);
-              setFormData({ email: '', name: '', role: 'interested-user', referral: '' });
-            }}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
           {/* Success Icon */}
           <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <Check className="w-10 h-10 text-white" />
@@ -147,7 +139,7 @@ export default function LandingPage() {
           {isFoundingMember ? (
             <div className="bg-gradient-to-r from-pink-100 to-purple-100 border-2 border-pink-300 rounded-2xl p-6 mb-6">
               <p className="text-lg font-semibold text-gray-800 mb-2">
-                Congratulations! You're one of our first 500 founding members 🚀
+                Congratulations! You're one of our first 1000 founding members 🚀
               </p>
               <p className="text-gray-700">
                 You'll receive <strong>3 months of free full access</strong> and a special <strong>Founding Member badge</strong> on your profile when we launch!
@@ -172,30 +164,31 @@ export default function LandingPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
             {/* Copy Link Button */}
             <button
               onClick={copyLink}
-              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg"
             >
-              {copied ? (
-                <>
-                  <Check className="w-5 h-5" />
-                  Link Copied!
-                </>
-              ) : (
-                <>
-                  <Mail className="w-5 h-5" />
-                  Copy Link to Share
-                </>
-              )}
+              {copied ? 'Link Copied!' : 'Copy Link'}
             </button>
             
-            {/* Share hint */}
-            <p className="text-xs text-gray-500">
-              Share on WhatsApp, Facebook, Twitter, or anywhere!
-            </p>
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setSubmitted(false);
+                setFormData({ email: '', name: '', role: 'interested-user', referral: '' });
+              }}
+              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+            >
+              Close
+            </button>
           </div>
+          
+          {/* Share hint */}
+          <p className="text-xs text-gray-500 mt-3">
+            Share on WhatsApp, Facebook, Twitter, or anywhere!
+          </p>
         </div>
       </div>
     );
@@ -328,7 +321,7 @@ export default function LandingPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600" />
-                <span><strong>{Math.max(0, 500 - earlyUsersCount)}</strong> founding spots left</span>
+                <span><strong>{Math.max(0, 1000 - earlyUsersCount)}</strong> founding spots left</span>
               </div>
             </div>
           </div>
