@@ -562,31 +562,6 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="max-w-4xl mx-auto px-6 py-20">
-        <div className="bg-white rounded-3xl p-12 shadow-2xl text-center relative overflow-hidden">
-          {/* Keep existing illustration */}
-          <div className="hidden md:block absolute -bottom-10 -right-10 opacity-10">
-            <img src="/newFrame 57.jpg.png" alt="" className="w-64 h-64 object-cover" />
-          </div>
-          
-          <h2 className="text-3xl font-bold text-gray-900 mb-4 relative z-10">
-            Ready to Find Love?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 relative z-10">
-            Start your journey to genuine connections today
-          </p>
-
-          <div className="relative z-10">
-            <Link
-              to="/signup"
-              className="inline-block px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg"
-            >
-              Get Started - Only $0.99/month
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-6">
