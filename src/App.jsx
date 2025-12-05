@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HeartLoader from './components/common/HeartLoader';
 
 // Pages
+import ComingSoonPage from './pages/ComingSoonPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
@@ -51,26 +52,30 @@ function AuthGuard({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public Landing Page */}
+      {/* Coming Soon Page - Main Entry Point */}
+      <Route path="/" element={<ComingSoonPage />} />
+      
+      {/* Public Landing Page - Email Collection */}
       <Route path="/landing" element={<LandingPage />} />
       
+      {/* ALL OTHER ROUTES DISABLED FOR PRE-LAUNCH */}
       {/* Public Routes - Auth Pages (redirect if authenticated) */}
-      <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
+      {/* <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
       <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
-      <Route path="/forgot-password" element={<AuthGuard><ForgotPasswordPage /></AuthGuard>} />
+      <Route path="/forgot-password" element={<AuthGuard><ForgotPasswordPage /></AuthGuard>} /> */}
 
       {/* Onboarding Route */}
-      <Route
+      {/* <Route
         path="/onboarding"
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={false}>
             <OnboardingPage />
           </ProtectedRoute>
         }
-      />
+      /> */}
 
       {/* Protected Routes - Require Profile Setup */}
-      <Route
+      {/* <Route
         path="/home"
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
@@ -140,10 +145,10 @@ function AppRoutes() {
             <AdminPanelPage />
           </ProtectedRoute>
         }
-      />
+      /> */}
 
       {/* Profile Setup Placeholder (Milestone 2) */}
-      <Route
+      {/* <Route
         path="/profile-setup"
         element={
           <ProtectedRoute requireVerification={true}>
@@ -160,11 +165,10 @@ function AppRoutes() {
             </div>
           </ProtectedRoute>
         }
-      />
+      /> */}
 
-      {/* Default Routes */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Default Routes - Redirect all unknown paths to Coming Soon */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
