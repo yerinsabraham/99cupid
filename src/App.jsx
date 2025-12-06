@@ -52,13 +52,15 @@ function AuthGuard({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Coming Soon Page - Main Entry Point */}
-      <Route path="/" element={<ComingSoonPage />} />
-      
-      {/* Public Landing Page - Email Collection */}
+      {/* PRE-LAUNCH: Landing Page as Main Entry Point */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/landing" element={<LandingPage />} />
       
+      {/* Coming Soon Page (not used currently) */}
+      {/* <Route path="/coming-soon" element={<ComingSoonPage />} /> */}
+      
       {/* ALL OTHER ROUTES DISABLED FOR PRE-LAUNCH */}
+      {/* WHEN READY TO LAUNCH: Uncomment these routes and change "/" to redirect to /login */}
       {/* Public Routes - Auth Pages (redirect if authenticated) */}
       {/* <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
       <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
