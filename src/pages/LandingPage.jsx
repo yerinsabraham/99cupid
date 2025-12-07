@@ -354,7 +354,7 @@ export default function LandingPage() {
 
       {/* Features Grid Section - Below Hero */}
       <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
           {/* Full Access Card */}
           <button
             onClick={() => scrollToSection('full-access-section')}
@@ -389,6 +389,18 @@ export default function LandingPage() {
             </div>
             <h3 className="font-bold text-gray-900 mb-1">Global</h3>
             <p className="text-sm text-gray-600">Filipino Canadian story, global reach</p>
+          </button>
+
+          {/* Customer Service Card */}
+          <button
+            onClick={() => scrollToSection('customer-service-section')}
+            className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all text-left hover:scale-105 active:scale-95"
+          >
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+              <Mail className="w-6 h-6 text-blue-600" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">Customer Service</h3>
+            <p className="text-sm text-gray-600">Support when you need it</p>
           </button>
 
           {/* No Upsells Card */}
@@ -523,6 +535,49 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Customer Service Section */}
+      <section id="customer-service-section" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+              <Mail className="w-8 h-8 text-blue-600" />
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Customer Service</h2>
+            <p className="text-xl text-gray-600 mb-6">
+              We're here to help you every step of the way.
+            </p>
+            <ul className="space-y-4 text-gray-700">
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <span><strong>Fast response times</strong> - Get help when you need it</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <span><strong>Friendly support team</strong> - Real people who care</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <span><strong>Multiple contact options</strong> - Email, in-app chat, or help center</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <span><strong>Account assistance</strong> - Help with profile, billing, or technical issues</span>
+              </li>
+            </ul>
+            <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+              <p className="text-sm text-blue-700">
+                <strong>Contact us:</strong> <a href="mailto:info@cupid.com" className="underline hover:text-blue-900">info@cupid.com</a>
+              </p>
+            </div>
+          </div>
+          <div className="hidden md:block">
+            <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-3xl p-12 shadow-xl">
+              <Mail className="w-20 h-20 text-blue-600 mx-auto" />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* No Upsells Section */}
       <section id="no-upsells-section" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -595,8 +650,8 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-3">Contact</h4>
               <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                 <Mail className="w-4 h-4" />
-                <a href="mailto:99Cupidlove@gmail.com" className="hover:text-white transition-colors">
-                  99Cupidlove@gmail.com
+                <a href="mailto:info@cupid.com" className="hover:text-white transition-colors">
+                  info@cupid.com
                 </a>
               </div>
             </div>
