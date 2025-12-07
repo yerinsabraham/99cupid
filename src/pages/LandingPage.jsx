@@ -566,7 +566,7 @@ export default function LandingPage() {
             </ul>
             <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
               <p className="text-sm text-blue-700">
-                <strong>Contact us:</strong> <a href="mailto:info@cupid.com" className="underline hover:text-blue-900">info@cupid.com</a>
+                <strong>Contact us:</strong> <a href="mailto:info@99cupid.com" className="underline hover:text-blue-900">info@99cupid.com</a>
               </p>
             </div>
           </div>
@@ -650,8 +650,8 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-3">Contact</h4>
               <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                 <Mail className="w-4 h-4" />
-                <a href="mailto:info@cupid.com" className="hover:text-white transition-colors">
-                  info@cupid.com
+                <a href="mailto:info@99cupid.com" className="hover:text-white transition-colors">
+                  info@99cupid.com
                 </a>
               </div>
             </div>

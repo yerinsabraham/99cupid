@@ -39,7 +39,7 @@ The Firebase API key is now configured, but you need to **enable authentication*
 4. **Enable Google (Optional but recommended)**:
    - Click "Google" in Sign-in method
    - Toggle "Enable"
-   - Add support email: info@cupid.com
+   - Add support email: info@99cupid.com
    - Click "Save"
 
 5. **Create Firestore Database**:
@@ -88,7 +88,7 @@ firebase deploy
 - **Name**: cupid
 - **ID**: cupid-e5874  
 - **Number**: 302226954210
-- **Support Email**: info@cupid.com
+- **Support Email**: info@99cupid.com
 
 ### Services Ready:
 - ✅ Firebase SDK configured

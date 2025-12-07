@@ -31,7 +31,7 @@ Beautiful, responsive landing page with email collection, Firestore integration,
 1. In EmailJS dashboard, go to **Email Services**
 2. Click **Add New Service**
 3. Select **Gmail**
-4. Connect your Gmail: **info@cupid.com**
+4. Connect your Gmail: **info@99cupid.com**
 5. Note your **Service ID** (e.g., `service_abc123`)
 
 ### Step 3: Create Email Template
@@ -143,8 +143,8 @@ Thanks for joining 99Cupid — early access confirmed
                 — 99Cupid Team
               </p>
               <p style="margin: 0 0 15px 0;">
-                <a href="mailto:info@cupid.com" style="color: #ec4899; text-decoration: none; font-size: 14px;">
-                  info@cupid.com
+                <a href="mailto:info@99cupid.com" style="color: #ec4899; text-decoration: none; font-size: 14px;">
+                  info@99cupid.com
                 </a>
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.5;">
@@ -372,6 +372,6 @@ If you hit limits, we can switch to Cloud Functions + SendGrid (more setup but b
 
 ## Support
 
-Questions? Email: info@cupid.com
+Questions? Email: info@99cupid.com
 
 Landing page is ready to collect early users! 🚀💕
