@@ -616,7 +616,68 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Bottom CTA Section - Sign Up Form */}
+      <section className="max-w-7xl mx-auto px-6 py-20">
+        <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Find Your Match?
+          </h2>
+          <p className="text-lg md:text-xl mb-8 text-pink-50">
+            Join the waitlist and be among the first 1,000 founding members
+          </p>
+
+          {/* Email Form */}
+          <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                className="flex-1 px-6 py-4 bg-white/95 text-gray-900 border-2 border-white rounded-xl focus:outline-none focus:border-pink-200 transition-colors text-lg"
+                required
+              />
+              <button
+                type="submit"
+                disabled={!isValid || loading}
+                className="px-8 py-4 bg-white text-pink-600 rounded-xl font-semibold hover:bg-pink-50 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
+              >
+                {loading ? (
+                  <>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-5 h-5" />
+                    Join Waitlist
+                  </>
+                )}
+              </button>
+            </div>
+
+            {error && (
+              <div className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-3 flex items-center gap-2 text-white">
+                <X className="w-5 h-5" />
+                <span>{error}</span>
+              </div>
+            )}
+          </form>
+
+          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-pink-50">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              <span><strong>{earlyUsersCount}</strong> early members</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              <span><strong>{Math.max(0, 1000 - earlyUsersCount)}</strong> spots left</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-6">

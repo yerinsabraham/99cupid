@@ -59,25 +59,29 @@ function AppRoutes() {
       {/* Coming Soon Page (not used currently) */}
       {/* <Route path="/coming-soon" element={<ComingSoonPage />} /> */}
       
+      {/* SPECIAL ADMIN ACCESS - Secret route for development/testing */}
+      <Route path="/admin-login" element={<AuthGuard><LoginPage /></AuthGuard>} />
+      <Route path="/admin-signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
+      <Route path="/forgot-password" element={<AuthGuard><ForgotPasswordPage /></AuthGuard>} />
+      
       {/* ALL OTHER ROUTES DISABLED FOR PRE-LAUNCH */}
       {/* WHEN READY TO LAUNCH: Uncomment these routes and change "/" to redirect to /login */}
       {/* Public Routes - Auth Pages (redirect if authenticated) */}
       {/* <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
-      <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
-      <Route path="/forgot-password" element={<AuthGuard><ForgotPasswordPage /></AuthGuard>} /> */}
+      <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} /> */}
 
       {/* Onboarding Route */}
-      {/* <Route
+      <Route
         path="/onboarding"
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={false}>
             <OnboardingPage />
           </ProtectedRoute>
         }
-      /> */}
+      />
 
       {/* Protected Routes - Require Profile Setup */}
-      {/* <Route
+      <Route
         path="/home"
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
@@ -147,7 +151,7 @@ function AppRoutes() {
             <AdminPanelPage />
           </ProtectedRoute>
         }
-      /> */}
+      />
 
       {/* Profile Setup Placeholder (Milestone 2) */}
       {/* <Route
