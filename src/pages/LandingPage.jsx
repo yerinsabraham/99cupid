@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import emailjs from '@emailjs/browser';
 import { Heart, Shield, MessageCircle, Sparkles, Check, X, Loader, Mail, Users, Lock, Globe, DollarSign } from 'lucide-react';
@@ -57,15 +57,29 @@ export default function LandingPage() {
     try {
       // Step 1: Validate email format (already done above)
       
-      // Step 2: Save to Firestore landing_signups collection
+      // Step 2: Check if email already exists
+      const emailToCheck = formData.email.toLowerCase().trim();
+      const emailQuery = query(
+        collection(db, 'landing_signups'),
+        where('email', '==', emailToCheck)
+      );
+      const existingSignups = await getDocs(emailQuery);
+      
+      if (!existingSignups.empty) {
+        setError('This email has already been registered. Thank you for your interest!');
+        setLoading(false);
+        return;
+      }
+      
+      // Step 3: Save to Firestore landing_signups collection
       const docData = {
-        email: formData.email.toLowerCase().trim(),
+        email: emailToCheck,
         timestamp: serverTimestamp(),
       };
 
       await addDoc(collection(db, 'landing_signups'), docData);
 
-      // Step 3: Get updated count of total signups
+      // Step 4: Get updated count of total signups
       const signupsSnapshot = await getDocs(collection(db, 'landing_signups'));
       const totalCount = signupsSnapshot.size;
 
@@ -73,7 +87,7 @@ export default function LandingPage() {
       const isFounder = totalCount <= 1000;
       setIsFoundingMember(isFounder);
 
-      // Step 4a: Send notification email to support@99cupid.com
+      // Step 5a: Send notification email to support@99cupid.com
       try {
         const supportTemplateParams = {
           userEmail: formData.email.toLowerCase().trim(),
@@ -89,7 +103,7 @@ export default function LandingPage() {
         console.error('Support notification failed (non-critical):', emailError);
       }
 
-      // Step 4b: Send confirmation email to user
+      // Step 5b: Send confirmation email to user
       try {
         const userTemplateParams = {
           to_name: formData.name || 'there',
@@ -109,7 +123,7 @@ export default function LandingPage() {
         console.error('User confirmation failed (non-critical):', emailError);
       }
 
-      // Step 5: Show success message on UI
+      // Step 6: Show success message on UI
       setSubmitted(true);
       setEarlyUsersCount(totalCount + 525); // Keep the display count with baseline
     } catch (err) {
