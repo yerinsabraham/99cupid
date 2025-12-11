@@ -28,7 +28,7 @@ export default function LandingPage() {
 
   const loadEarlyUsersCount = async () => {
     try {
-      const snapshot = await getDocs(collection(db, 'earlyUsers'));
+      const snapshot = await getDocs(collection(db, 'landing_signups'));
       // Start count at 525 and add actual signups from database
       setEarlyUsersCount(525 + snapshot.size);
     } catch (err) {
@@ -55,46 +55,44 @@ export default function LandingPage() {
     setLoading(true);
 
     try {
-      // Check if user will be founding member (first 1000)
-      const isFounder = earlyUsersCount < 1000;
-      setIsFoundingMember(isFounder);
-
-      // Save to Firestore
+      // Step 1: Validate email format (already done above)
+      
+      // Step 2: Save to Firestore landing_signups collection
       const docData = {
         email: formData.email.toLowerCase().trim(),
-        name: formData.name.trim() || '',
-        role: formData.role,
-        referral: formData.referral.trim() || '',
-        founderCandidate: isFounder,
-        submittedAt: serverTimestamp(),
-        source: 'landing',
+        timestamp: serverTimestamp(),
       };
 
-      await addDoc(collection(db, 'earlyUsers'), docData);
+      await addDoc(collection(db, 'landing_signups'), docData);
 
-      // Send confirmation email via EmailJS (non-blocking)
+      // Step 3: Get updated count of total signups
+      const signupsSnapshot = await getDocs(collection(db, 'landing_signups'));
+      const totalCount = signupsSnapshot.size;
+
+      // Check if user is founding member (first 1000)
+      const isFounder = totalCount <= 1000;
+      setIsFoundingMember(isFounder);
+
+      // Step 4: Send notification email to support@99cupid.com via EmailJS
       try {
         const templateParams = {
-          to_name: formData.name || 'there',
-          to_email: formData.email,
-          founding_status: isFounder ? 'Founding Member' : 'Early Access',
-          founding_benefit: isFounder 
-            ? 'You are one of the first 1000 founding members and will receive free premium access for 6 months when we launch!' 
-            : 'Join early to secure your spot!',
+          userEmail: formData.email.toLowerCase().trim(),
+          totalCount: totalCount
         };
 
         await emailjs.send(
           'service_qcceja7',
-          'template_sm7bz89',
+          'template_ici6lpl',
           templateParams
         );
       } catch (emailError) {
-        console.error('Email sending failed (non-critical):', emailError);
+        console.error('Email notification failed (non-critical):', emailError);
         // Don't block user success - email failure is non-critical
       }
 
+      // Step 5: Show success message on UI
       setSubmitted(true);
-      setEarlyUsersCount(prev => prev + 1);
+      setEarlyUsersCount(totalCount + 525); // Keep the display count with baseline
     } catch (err) {
       console.error('Submission error:', err);
       setError('Something went wrong. Please try again.');
