@@ -73,9 +73,9 @@ export default function LandingPage() {
       const isFounder = totalCount <= 1000;
       setIsFoundingMember(isFounder);
 
-      // Step 4: Send notification email to support@99cupid.com via EmailJS
+      // Step 4a: Send notification email to support@99cupid.com
       try {
-        const templateParams = {
+        const supportTemplateParams = {
           userEmail: formData.email.toLowerCase().trim(),
           totalCount: totalCount
         };
@@ -83,11 +83,30 @@ export default function LandingPage() {
         await emailjs.send(
           'service_qcceja7',
           'template_ici6lpl',
-          templateParams
+          supportTemplateParams
         );
       } catch (emailError) {
-        console.error('Email notification failed (non-critical):', emailError);
-        // Don't block user success - email failure is non-critical
+        console.error('Support notification failed (non-critical):', emailError);
+      }
+
+      // Step 4b: Send confirmation email to user
+      try {
+        const userTemplateParams = {
+          to_name: formData.name || 'there',
+          to_email: formData.email.toLowerCase().trim(),
+          founding_status: isFounder ? 'Founding Member' : 'Early Access',
+          founding_benefit: isFounder 
+            ? 'You are one of the first 1000 founding members and will receive free premium access for 6 months when we launch!' 
+            : 'Join early to secure your spot!',
+        };
+
+        await emailjs.send(
+          'service_qcceja7',
+          'template_sm7bz89',
+          userTemplateParams
+        );
+      } catch (emailError) {
+        console.error('User confirmation failed (non-critical):', emailError);
       }
 
       // Step 5: Show success message on UI
