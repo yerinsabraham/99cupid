@@ -40,6 +40,12 @@ service firebase.storage {
       allow write: if isAuthenticated() && isValidImage();
     }
     
+    // Public Assets - Publicly readable for logos, email templates, etc.
+    match /assets/{allPaths=**} {
+      allow read: if true;  // Anyone can read
+      allow write: if false;  // Only admins can write (via Firebase Console or Admin SDK)
+    }
+    
     // Deny all other access
     match /{allPaths=**} {
       allow read, write: if false;
