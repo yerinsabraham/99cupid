@@ -210,12 +210,31 @@ export function AuthProvider({ children }) {
         message = 'Password is too weak. Use at least 8 characters.';
         break;
       case 'auth/operation-not-allowed':
-        message = 'Email/password authentication is not enabled.';
+        message = 'This sign-in method is not enabled. Please enable Email/Password and Google authentication in Firebase Console.';
+        break;
+      case 'auth/configuration-not-found':
+        message = 'Firebase authentication is not properly configured. Please check your Firebase Console settings.';
+        break;
+      case 'auth/popup-closed-by-user':
+        message = 'Sign-in popup was closed. Please try again.';
+        break;
+      case 'auth/cancelled-popup-request':
+        message = 'Sign-in was cancelled. Please try again.';
+        break;
+      case 'auth/popup-blocked':
+        message = 'Sign-in popup was blocked. Please allow popups for this site.';
+        break;
+      case 'auth/unauthorized-domain':
+        message = 'This domain is not authorized. Please add it to Firebase Console > Authentication > Settings > Authorized domains.';
+        break;
+      case 'auth/invalid-api-key':
+        message = 'Invalid Firebase API key. Please check your .env file configuration.';
         break;
       default:
         message = error.message || message;
     }
 
+    console.error('Authentication error:', error.code, error.message);
     setError(message);
     return { success: false, message };
   };

@@ -59,7 +59,7 @@ function AppRoutes() {
       {/* Coming Soon Page (not used currently) */}
       {/* <Route path="/coming-soon" element={<ComingSoonPage />} /> */}
       
-      {/* SPECIAL ADMIN ACCESS - Secret route for development/testing */}
+      {/* PUBLIC LOGIN ROUTES - Available for all users */}
       <Route path="/admin-login" element={<AuthGuard><LoginPage /></AuthGuard>} />
       <Route path="/admin-signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
       <Route path="/forgot-password" element={<AuthGuard><ForgotPasswordPage /></AuthGuard>} />
