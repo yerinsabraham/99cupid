@@ -84,23 +84,43 @@ export const AdminService = {
   },
 
   /**
-   * Get all verification requests
+   * Get all verification requests (pending only by default)
    */
-  async getVerificationRequests() {
+  async getVerificationRequests(includeAll = false) {
     try {
       const verificationsRef = collection(db, 'verifications');
-      const q = query(verificationsRef, where('status', '==', 'pending'));
+      let q;
+      
+      if (includeAll) {
+        q = query(verificationsRef);
+      } else {
+        q = query(verificationsRef, where('status', '==', 'pending'));
+      }
+      
       const snapshot = await getDocs(q);
 
-      const verifications = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const verifications = [];
+      
+      for (const verDoc of snapshot.docs) {
+        const verData = verDoc.data();
+        
+        // Get user details
+        const userDoc = await getDoc(doc(db, 'users', verData.userId));
+        const userData = userDoc.exists() ? userDoc.data() : null;
+        
+        verifications.push({
+          id: verDoc.id,
+          ...verData,
+          userName: userData?.name || 'Unknown',
+          userEmail: userData?.email || '',
+          userPhotos: userData?.photos || []
+        });
+      }
 
-      // Sort by creation date (oldest first - pending first)
+      // Sort by creation date (oldest pending first)
       verifications.sort((a, b) => {
-        const timeA = new Date(a.createdAt).getTime();
-        const timeB = new Date(b.createdAt).getTime();
+        const timeA = a.submittedAt?.toDate?.().getTime() || new Date(a.submittedAt).getTime();
+        const timeB = b.submittedAt?.toDate?.().getTime() || new Date(b.submittedAt).getTime();
         return timeA - timeB;
       });
 
@@ -112,23 +132,45 @@ export const AdminService = {
   },
 
   /**
-   * Approve user verification
+   * Approve user verification (enhanced to work with VerificationService)
    */
-  async approveVerification(verificationId, userId) {
+  async approveVerification(verificationId, adminId) {
     try {
-      // Update verification status
       const verificationRef = doc(db, 'verifications', verificationId);
+      const verificationDoc = await getDoc(verificationRef);
+      
+      if (!verificationDoc.exists()) {
+        return { success: false, error: 'Verification not found' };
+      }
+
+      const verData = verificationDoc.data();
+
+      // Update verification status
       await updateDoc(verificationRef, {
         status: 'approved',
-        approvedAt: serverTimestamp(),
+        reviewedAt: serverTimestamp(),
+        reviewedBy: adminId,
+        rejectionReason: null
       });
 
-      // Update user profile
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, {
-        isVerified: true,
-        updatedAt: serverTimestamp(),
-      });
+      // Update user profile based on verification type
+      const userRef = doc(db, 'users', verData.userId);
+      const updateData = {
+        [`verification.${verData.verificationType}`]: 'approved',
+        [`verification.${verData.verificationType}VerifiedAt`]: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      // Set the specific verified flag
+      if (verData.verificationType === 'phone') {
+        updateData.isPhoneVerified = true;
+      } else if (verData.verificationType === 'photo') {
+        updateData.isPhotoVerified = true;
+      } else if (verData.verificationType === 'id') {
+        updateData.isIDVerified = true;
+      }
+
+      await updateDoc(userRef, updateData);
 
       return { success: true };
     } catch (error) {
@@ -138,15 +180,33 @@ export const AdminService = {
   },
 
   /**
-   * Reject user verification
+   * Reject user verification (enhanced)
    */
-  async rejectVerification(verificationId, userId, reason = '') {
+  async rejectVerification(verificationId, adminId, reason = 'Does not meet verification requirements') {
     try {
       const verificationRef = doc(db, 'verifications', verificationId);
+      const verificationDoc = await getDoc(verificationRef);
+      
+      if (!verificationDoc.exists()) {
+        return { success: false, error: 'Verification not found' };
+      }
+
+      const verData = verificationDoc.data();
+
+      // Update verification status
       await updateDoc(verificationRef, {
         status: 'rejected',
         rejectionReason: reason,
-        rejectedAt: serverTimestamp(),
+        reviewedAt: serverTimestamp(),
+        reviewedBy: adminId
+      });
+
+      // Update user profile
+      const userRef = doc(db, 'users', verData.userId);
+      await updateDoc(userRef, {
+        [`verification.${verData.verificationType}`]: 'rejected',
+        [`verification.${verData.verificationType}RejectionReason`]: reason,
+        updatedAt: serverTimestamp()
       });
 
       return { success: true };

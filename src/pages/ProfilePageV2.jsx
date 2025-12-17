@@ -3,15 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { LogOut, Edit2, Camera, MapPin, Heart, CheckCircle, Shield } from 'lucide-react';
+import { LogOut, Edit2, Camera, MapPin, Heart, CheckCircle, Shield, Settings } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
 import HeartLoader from '../components/common/HeartLoader';
+import VerificationBadge from '../components/verification/VerificationBadge';
+import AdminService from '../services/AdminService';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { currentUser, userProfile, logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -23,7 +26,12 @@ export default function ProfilePage() {
     try {
       const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
       if (userDoc.exists()) {
-        setProfile(userDoc.data());
+        const userData = userDoc.data();
+        setProfile(userData);
+        
+        // Check if user is admin
+        const adminStatus = await AdminService.isAdmin(currentUser.uid);
+        setIsAdmin(adminStatus);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -87,9 +95,7 @@ export default function ProfilePage() {
                       {profile?.displayName || 'User'}
                       {profile?.age && `, ${profile.age}`}
                     </h2>
-                    {profile?.isVerified && (
-                      <CheckCircle className="w-6 h-6 text-blue-400 fill-blue-400" />
-                    )}
+                    <VerificationBadge user={profile} size="lg" />
                   </div>
                   {profile?.location && (
                     <div className="flex items-center space-x-1 mt-2">
@@ -173,19 +179,18 @@ export default function ProfilePage() {
               <div className="bg-blue-50 rounded-2xl p-4 text-center">
                 <Shield className="w-5 h-5 text-blue-600 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-blue-600">
-                  {profile?.verificationStatus === 'approved' ? '✓' : '-'}
+                  {profile?.verification?.phone === 'approved' || profile?.verification?.photo === 'approved' ? '✓' : '-'}
                 </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  {profile?.verificationStatus === 'approved' ? 'Verified' : 'Not Verified'}
-                </p>
-                {profile?.verificationStatus !== 'approved' && (
-                  <button
-                    onClick={() => navigate('/verification')}
-                    className="mt-2 text-xs text-blue-600 font-medium hover:underline"
-                  >
-                    Get Verified
-                  </button>
-                )}
+                <p className="text-xs text-gray-600 mt-1">Verification</p>
+                <button
+                  onClick={() => navigate('/verification')}
+                  className="mt-2 text-xs text-blue-600 font-medium hover:underline"
+                >
+                  {profile?.verification?.phone === 'approved' || profile?.verification?.photo === 'approved' 
+                    ? 'Manage' 
+                    : 'Get Verified'
+                  }
+                </button>
               </div>
             </div>
           </div>
@@ -207,10 +212,6 @@ export default function ProfilePage() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Email</span>
-                <span className="font-medium text-gray-800">{currentUser?.email}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-gray-500">Member since</span>
                 <span className="font-medium text-gray-800">
                   {profile?.createdAt
@@ -224,10 +225,26 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Edit Profile Button */}
-          <div className="px-6 pb-6">
-            <button className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg">
-              Edit Profile
+          {/* Action Buttons */}
+          <div className="px-6 pb-6 space-y-3">
+            {/* Admin Dashboard Button (Only for Admins) */}
+            {isAdmin && (
+              <button 
+                onClick={() => navigate('/admin')}
+                className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center space-x-2"
+              >
+                <Settings className="w-5 h-5" />
+                <span>Admin Dashboard</span>
+              </button>
+            )}
+            
+            {/* Edit Profile Button */}
+            <button 
+              onClick={() => navigate('/edit-profile')}
+              className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg flex items-center justify-center space-x-2"
+            >
+              <Edit2 className="w-5 h-5" />
+              <span>Edit Profile</span>
             </button>
           </div>
         </div>

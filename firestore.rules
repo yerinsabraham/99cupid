@@ -78,9 +78,11 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid ||
         isAdmin()
       );
-      allow create: if isAuthenticated() && isOwner(resource.data.userId);
-      allow update: if isAdmin();
-      allow delete: if false;
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.status == 'pending';
+      allow update: if isAdmin(); // Only admins can approve/reject
+      allow delete: if false; // Never delete verifications (audit trail)
     }
     
     // Reports Collection - Admin only

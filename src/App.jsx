@@ -14,6 +14,7 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import OnboardingPage from './pages/OnboardingPage';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePageV2';
+import EditProfilePage from './pages/EditProfilePage';
 import MatchesPage from './pages/MatchesPageV2';
 import MessagesPage from './pages/MessagesPageV2';
 import ChatPage from './pages/ChatPage';
@@ -95,6 +96,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/edit-profile"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <EditProfilePage />
           </ProtectedRoute>
         }
       />

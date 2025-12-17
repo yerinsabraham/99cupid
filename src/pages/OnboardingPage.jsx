@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import WelcomeScreen from '../components/onboarding/WelcomeScreen';
 import BasicInfoStep from '../components/onboarding/BasicInfoStep';
@@ -50,7 +50,12 @@ export default function OnboardingPage() {
         updatedAt: new Date().toISOString()
       };
 
+      console.log('Saving onboarding data with profileSetupComplete:', profileData);
       await setDoc(doc(db, 'users', currentUser.uid), profileData, { merge: true });
+
+      // Verify it was saved
+      const verifyDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      console.log('Verified profile after save:', verifyDoc.data());
 
       // Update the context to reflect the completed profile
       await updateUserProfile({ profileSetupComplete: true });

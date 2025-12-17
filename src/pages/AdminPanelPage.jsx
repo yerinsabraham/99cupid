@@ -127,30 +127,30 @@ export default function AdminPanelPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 p-4 md:p-6 pb-24">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <button
             onClick={() => navigate('/home')}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 mb-4"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Home</span>
+            <span className="text-sm md:text-base">Back to Home</span>
           </button>
 
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
+              <Shield className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
-              <p className="text-gray-600">Manage users, reports, and verifications</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Admin Panel</h1>
+              <p className="text-sm md:text-base text-gray-600 hidden sm:block">Manage users, reports, and verifications</p>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex space-x-4 mb-8 border-b border-gray-200">
+        {/* Tab Navigation - Mobile Responsive */}
+        <div className="flex overflow-x-auto space-x-2 md:space-x-4 mb-6 md:mb-8 border-b border-gray-200 scrollbar-hide">
           {[
             { id: 'overview', label: 'Overview', icon: BarChart3 },
             { id: 'users', label: 'Users', icon: Users },
@@ -162,14 +162,14 @@ export default function AdminPanelPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-4 font-medium flex items-center space-x-2 border-b-2 transition-all ${
+                className={`px-4 md:px-6 py-3 md:py-4 font-medium flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-pink-600 text-pink-600'
                     : 'border-transparent text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span>{tab.label}</span>
+                <Icon className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="text-sm md:text-base">{tab.label}</span>
               </button>
             );
           })}
@@ -239,7 +239,8 @@ export default function AdminPanelPage() {
             {/* Users Tab */}
             {activeTab === 'users' && (
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b">
                       <tr>
@@ -318,6 +319,57 @@ export default function AdminPanelPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y">
+                  {users.map((user) => (
+                    <div key={user.id} className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800">{user.displayName}</h3>
+                          <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                        </div>
+                        {user.isVerified && (
+                          <span className="text-green-600 font-semibold ml-2">✓</span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            user.accountStatus === 'active'
+                              ? 'bg-green-100 text-green-700'
+                              : user.accountStatus === 'suspended'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {user.accountStatus}
+                        </span>
+                        
+                        {user.accountStatus === 'active' ? (
+                          <button
+                            onClick={() => handleSuspendUser(user.id)}
+                            className="px-3 py-1 text-xs text-red-600 hover:text-red-800 font-semibold"
+                          >
+                            Suspend
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              AdminService.unsuspendUser(user.id).then(() =>
+                                loadAdminData()
+                              )
+                            }
+                            className="px-3 py-1 text-xs text-green-600 hover:text-green-800 font-semibold"
+                          >
+                            Unsuspend
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -333,50 +385,51 @@ export default function AdminPanelPage() {
                   reports.map((report) => (
                     <div
                       key={report.id}
-                      className="bg-white rounded-2xl shadow-lg p-6"
+                      className="bg-white rounded-2xl shadow-lg p-4 md:p-6"
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-800 mb-1">
+                      <div className="flex flex-col sm:flex-row items-start justify-between mb-4">
+                        <div className="mb-3 sm:mb-0">
+                          <h3 className="text-base md:text-lg font-bold text-gray-800 mb-1">
                             Report #{report.id.slice(0, 8)}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs md:text-sm text-gray-600">
                             Reason: <span className="font-semibold">{report.reason}</span>
                           </p>
                         </div>
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
                             report.status === 'pending'
                               ? 'bg-yellow-100 text-yellow-700'
                               : report.status === 'under_review'
                               ? 'bg-blue-100 text-blue-700'
-                              : report.status === 'resolved'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-700'
+                              : 'bg-green-100 text-green-700'
                           }`}
                         >
                           {report.status}
                         </span>
                       </div>
 
-                      <p className="text-gray-700 mb-4">{report.description}</p>
+                      <div className="mb-4">
+                        <p className="text-xs md:text-sm text-gray-600 mb-2">Description:</p>
+                        <p className="text-xs md:text-sm text-gray-800">{report.description}</p>
+                      </div>
 
-                      <div className="flex space-x-3">
+                      <div className="flex flex-wrap gap-2">
                         {report.status === 'pending' && (
                           <>
                             <button
                               onClick={() =>
                                 handleUpdateReportStatus(report.id, 'under_review')
                               }
-                              className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-semibold text-sm"
+                              className="flex-1 sm:flex-none px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-semibold text-xs md:text-sm"
                             >
                               Review
                             </button>
                             <button
                               onClick={() =>
-                                handleUpdateReportStatus(report.id, 'dismissed')
+                                handleUpdateReportStatus(report.id, 'resolved')
                               }
-                              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold text-sm"
+                              className="flex-1 sm:flex-none px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold text-xs md:text-sm"
                             >
                               Dismiss
                             </button>
@@ -388,7 +441,7 @@ export default function AdminPanelPage() {
                               onClick={() =>
                                 handleUpdateReportStatus(report.id, 'resolved')
                               }
-                              className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-semibold text-sm"
+                              className="flex-1 sm:flex-none px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-semibold text-xs md:text-sm"
                             >
                               Resolve
                             </button>
@@ -396,7 +449,7 @@ export default function AdminPanelPage() {
                               onClick={() =>
                                 handleUpdateReportStatus(report.id, 'pending')
                               }
-                              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold text-sm"
+                              className="flex-1 sm:flex-none px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold text-xs md:text-sm"
                             >
                               Back to Pending
                             </button>
@@ -421,14 +474,14 @@ export default function AdminPanelPage() {
                   verifications.map((verification) => (
                     <div
                       key={verification.id}
-                      className="bg-white rounded-2xl shadow-lg p-6"
+                      className="bg-white rounded-2xl shadow-lg p-4 md:p-6"
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div>
-                          <h3 className="font-bold text-gray-800 mb-2">
+                          <h3 className="font-bold text-gray-800 mb-2 text-sm md:text-base">
                             Verification Request
                           </h3>
-                          <p className="text-sm text-gray-600 mb-4">
+                          <p className="text-xs md:text-sm text-gray-600 mb-4">
                             User ID: {verification.userId.slice(0, 12)}...
                           </p>
 
@@ -441,9 +494,9 @@ export default function AdminPanelPage() {
                           )}
                         </div>
 
-                        <div className="flex flex-col justify-between">
+                        <div className="flex flex-col justify-between space-y-4">
                           <div>
-                            <p className="text-sm text-gray-600 mb-2">
+                            <p className="text-xs md:text-sm text-gray-600 mb-2">
                               Submitted:{' '}
                               <span className="font-semibold">
                                 {new Date(
@@ -452,7 +505,7 @@ export default function AdminPanelPage() {
                                 ).toLocaleDateString()}
                               </span>
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-xs md:text-sm text-gray-600">
                               Status:{' '}
                               <span className="font-semibold text-yellow-600">
                                 {verification.status}
@@ -460,7 +513,7 @@ export default function AdminPanelPage() {
                             </p>
                           </div>
 
-                          <div className="flex space-x-3">
+                          <div className="flex gap-2 md:gap-3">
                             <button
                               onClick={() =>
                                 handleApproveVerification(
@@ -468,7 +521,7 @@ export default function AdminPanelPage() {
                                   verification.userId
                                 )
                               }
-                              className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold"
+                              className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold text-xs md:text-sm"
                             >
                               Approve
                             </button>
@@ -476,7 +529,7 @@ export default function AdminPanelPage() {
                               onClick={() =>
                                 handleRejectVerification(verification.id)
                               }
-                              className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
+                              className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold text-xs md:text-sm"
                             >
                               Reject
                             </button>

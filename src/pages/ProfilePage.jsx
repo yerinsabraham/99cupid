@@ -54,7 +54,6 @@ export default function ProfilePage() {
                   <CheckCircle className="w-6 h-6 text-blue-500 fill-blue-500" />
                 )}
               </div>
-              <p className="text-gray-600">{currentUser?.email}</p>
             </div>
 
             {/* Quick Stats */}
@@ -78,14 +77,6 @@ export default function ProfilePage() {
               <h3 className="font-semibold text-gray-800 text-lg">Account Details</h3>
               
               <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-                <div className="flex items-start space-x-3">
-                  <Mail className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium text-gray-800">{currentUser?.email}</p>
-                  </div>
-                </div>
-
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="w-5 h-5 text-gray-400 mt-1" />
                   <div className="flex-1">
