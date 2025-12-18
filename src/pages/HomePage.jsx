@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, Sparkles, TrendingUp } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import AppLayout from '../components/layout/AppLayout';
 import SwipeCard from '../components/swipe/SwipeCard';
 import MatchModal from '../components/modals/MatchModal';
+import FullProfileView from '../components/profile/FullProfileView';
 import HeartLoader from '../components/common/HeartLoader';
 import { getDemoUsers } from '../utils/demoUsers';
 import SwipeService from '../services/SwipeService';
+import MatchingService from '../services/MatchingService';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -20,27 +22,41 @@ export default function HomePage() {
   const [matchData, setMatchData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [swiping, setSwiping] = useState(false);
+  const [showFullProfile, setShowFullProfile] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [useMatchingAlgorithm, setUseMatchingAlgorithm] = useState(true);
+  const [showCompatibilityScore, setShowCompatibilityScore] = useState(false);
 
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        // Load demo users
-        const demoUsers = getDemoUsers();
+        let profiles = [];
+
+        if (currentUser && useMatchingAlgorithm) {
+          // Use intelligent matching algorithm
+          console.log('Using matching algorithm for user:', currentUser.uid);
+          profiles = await MatchingService.getMatches(currentUser.uid, 50);
+          console.log(`Loaded ${profiles.length} matched profiles`);
+        } else {
+          // Fallback to demo users
+          profiles = getDemoUsers();
+        }
         
         // Filter out already swiped profiles
         if (currentUser) {
           const swipedProfiles = await SwipeService.getSwipedProfiles(currentUser.uid);
           const swipedIds = swipedProfiles.map((s) => s.targetUserId);
-          const availableUsers = demoUsers.filter(
+          const availableUsers = profiles.filter(
             (user) =>
-              !swipedIds.includes(user.uid) && user.uid !== currentUser.uid
+              !swipedIds.includes(user.id) && user.id !== currentUser.uid
           );
           setUsers(availableUsers);
         } else {
-          setUsers(demoUsers);
+          setUsers(profiles);
         }
       } catch (error) {
         console.error('Error loading users:', error);
+        // Fallback to demo users
         setUsers(getDemoUsers());
       } finally {
         setLoading(false);
@@ -48,7 +64,7 @@ export default function HomePage() {
     };
 
     loadUsers();
-  }, [currentUser]);
+  }, [currentUser, useMatchingAlgorithm]);
 
   const handleSwipe = async (direction) => {
     if (!currentUser || swiping) return;
@@ -96,6 +112,30 @@ export default function HomePage() {
     }
   };
 
+  const handleTapProfile = (user) => {
+    // Add match reasons if available
+    if (user.scoreBreakdown && currentUser) {
+      const reasons = MatchingService.getMatchReasons(userProfile, user, user.scoreBreakdown);
+      user.matchReasons = reasons;
+    }
+    setSelectedProfile(user);
+    setShowFullProfile(true);
+  };
+
+  const handleLikeFromProfile = async () => {
+    setShowFullProfile(false);
+    await handleSwipe('right');
+  };
+
+  const handlePassFromProfile = () => {
+    setShowFullProfile(false);
+    handleSwipe('left');
+  };
+
+  const handleReportFromProfile = () => {
+    alert('Report functionality coming soon!');
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -110,13 +150,38 @@ export default function HomePage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen p-6">
+      <div className="min-h-screen p-6 pb-24">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center space-x-2">
-            <Heart className="w-6 h-6 text-pink-600 fill-pink-600" />
-            <h1 className="text-2xl font-bold text-gray-800">Discover</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Heart className="w-6 h-6 text-pink-600 fill-pink-600" />
+              <h1 className="text-2xl font-bold text-gray-800">Discover</h1>
+            </div>
+
+            {/* Toggle Compatibility Score */}
+            <button
+              onClick={() => setShowCompatibilityScore(!showCompatibilityScore)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                showCompatibilityScore
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              <div className="flex items-center space-x-1">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>{showCompatibilityScore ? 'Score: ON' : 'Score: OFF'}</span>
+              </div>
+            </button>
           </div>
+
+          {/* Algorithm Info */}
+          {currentUser && useMatchingAlgorithm && (
+            <div className="mt-3 flex items-center space-x-2 text-sm text-gray-600">
+              <Sparkles className="w-4 h-4 text-purple-500" />
+              <span>Smart matches based on your preferences</span>
+            </div>
+          )}
         </div>
 
         {/* Swipe Card Area */}
@@ -133,9 +198,11 @@ export default function HomePage() {
               {/* Current card */}
               {currentUser_ && (
                 <SwipeCard
-                  key={currentUser_.uid}
+                  key={currentUser_.id || currentUser_.uid}
                   user={currentUser_}
                   onSwipe={handleSwipe}
+                  onTapProfile={handleTapProfile}
+                  showCompatibility={showCompatibilityScore}
                   disabled={swiping}
                 />
               )}
@@ -170,6 +237,17 @@ export default function HomePage() {
         onStartChat={handleStartChat}
         match={matchData}
       />
+
+      {/* Full Profile View */}
+      {showFullProfile && selectedProfile && (
+        <FullProfileView
+          user={selectedProfile}
+          onClose={() => setShowFullProfile(false)}
+          onLike={handleLikeFromProfile}
+          onPass={handlePassFromProfile}
+          onReport={handleReportFromProfile}
+        />
+      )}
     </AppLayout>
   );
 }

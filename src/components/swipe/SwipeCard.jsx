@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { Heart, X, MapPin, CheckCircle, ShieldAlert, MoreVertical } from 'lucide-react';
 import { BlockService, ReportService } from '../../services/BlockReportService';
 
-export default function SwipeCard({ user, onSwipe, style, disabled = false }) {
+export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled = false, showCompatibility = false }) {
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [touchStartTime, setTouchStartTime] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showMenu, setShowMenu] = useState(false);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
+  const tapTimeThreshold = 200; // Max time for tap in ms
 
   const onTouchStart = (e) => {
     if (disabled) return;
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchStartTime(Date.now());
     setIsDragging(true);
   };
 
@@ -28,7 +31,13 @@ export default function SwipeCard({ user, onSwipe, style, disabled = false }) {
   };
 
   const onTouchEnd = () => {
+    const touchDuration = Date.now() - touchStartTime;
+    
     if (!touchStart || !touchEnd) {
+      // Check if it's a tap (quick touch with no movement)
+      if (touchDuration < tapTimeThreshold && onTapProfile) {
+        onTapProfile(user);
+      }
       setIsDragging(false);
       setDragOffset({ x: 0, y: 0 });
       return;
@@ -42,6 +51,9 @@ export default function SwipeCard({ user, onSwipe, style, disabled = false }) {
       onSwipe('left');
     } else if (isRightSwipe) {
       onSwipe('right');
+    } else if (touchDuration < tapTimeThreshold && onTapProfile) {
+      // It was a tap, not a swipe
+      onTapProfile(user);
     }
 
     // Reset
@@ -117,6 +129,14 @@ export default function SwipeCard({ user, onSwipe, style, disabled = false }) {
             <div className="absolute top-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-full flex items-center space-x-1 text-sm font-semibold shadow-lg">
               <CheckCircle className="w-4 h-4" />
               <span>Verified</span>
+            </div>
+          )}
+
+          {/* Compatibility Score Badge */}
+          {showCompatibility && user.compatibilityScore && (
+            <div className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full flex items-center space-x-2 text-sm font-bold shadow-lg">
+              <span className="text-lg">{user.compatibilityScore}%</span>
+              <span className="text-xs font-normal">Match</span>
             </div>
           )}
 
