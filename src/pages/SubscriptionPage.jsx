@@ -1,189 +1,344 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { CreditCard, CheckCircle, ArrowLeft, Loader } from 'lucide-react';
+import { Crown, CheckCircle, ArrowLeft, Loader, X, Heart, Zap, Eye, RotateCcw, TrendingUp, Shield, Star } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout';
-import SubscriptionService from '../services/SubscriptionService';
+import PaymentService from '../services/PaymentService';
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
-  const { currentUser, updateUserProfile } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [currentSubscription, setCurrentSubscription] = useState(null);
+  const [selectedTier, setSelectedTier] = useState(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [transactions, setTransactions] = useState([]);
 
-  const handleSubscribe = async () => {
-    setLoading(true);
-    setError('');
+  useEffect(() => {
+    loadSubscriptionData();
+  }, [currentUser]);
 
+  const loadSubscriptionData = async () => {
+    if (!currentUser) return;
+    
     try {
-      // In production, this would integrate with Stripe via a backend
-      // For now, we'll simulate a successful purchase
-      const result = await SubscriptionService.createStripeSubscription(currentUser.uid, {
-        customerId: 'cus_' + Math.random().toString(36).substr(2, 9),
-        subscriptionId: 'sub_' + Math.random().toString(36).substr(2, 9),
-        renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      });
+      const subscription = await PaymentService.getUserSubscription(currentUser.uid);
+      setCurrentSubscription(subscription);
 
-      if (result.success) {
-        // Update local profile
-        await updateUserProfile({
-          hasActiveSubscription: true,
-          subscriptionStatus: 'active',
-        });
-
-        // Show success and redirect
-        setError(''); // Clear any previous errors
-        setTimeout(() => {
-          navigate('/messages');
-        }, 1500);
-      } else {
-        setError(result.error || 'Failed to process subscription');
-      }
-    } catch (err) {
-      console.error('Subscription error:', err);
-      setError(err.message || 'An error occurred. Please try again.');
+      const history = await PaymentService.getTransactionHistory(currentUser.uid);
+      setTransactions(history);
+    } catch (error) {
+      console.error('Error loading subscription:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSelectPlan = (tierId) => {
+    if (tierId === 'free') return;
+    setSelectedTier(tierId);
+    setShowPaymentModal(true);
+  };
+
+  const handlePayment = async () => {
+    if (!selectedPaymentMethod || !selectedTier) return;
+
+    setProcessing(true);
+    try {
+      const tier = PaymentService.SUBSCRIPTION_TIERS[selectedTier];
+      
+      const result = await PaymentService.processPayment({
+        userId: currentUser.uid,
+        tierId: selectedTier,
+        amount: tier.price,
+        currency: tier.currency,
+        method: selectedPaymentMethod
+      });
+
+      if (result.success) {
+        alert('🎉 Subscription activated successfully!');
+        setShowPaymentModal(false);
+        loadSubscriptionData();
+      } else {
+        alert('Payment failed: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!confirm('Are you sure you want to cancel your subscription?')) return;
+
+    try {
+      const result = await PaymentService.cancelSubscription(currentUser.uid);
+      if (result.success) {
+        alert(result.message);
+        loadSubscriptionData();
+      }
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      alert('Failed to cancel subscription');
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader className="w-8 h-8 text-pink-600 animate-spin" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const tiers = PaymentService.SUBSCRIPTION_TIERS;
+  const isSubscribed = currentSubscription?.id !== 'free';
+
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-50 p-4 md:p-6 pb-24">
         {/* Back Button */}
         <button
-          onClick={() => navigate('/messages')}
+          onClick={() => navigate(-1)}
           className="mb-6 flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Back to Messages</span>
+          <span>Back</span>
         </button>
 
-        {/* Main Content */}
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <CreditCard className="w-10 h-10 text-white" />
+        {/* Header */}
+        <div className="max-w-6xl mx-auto text-center mb-12">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <Crown className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-4">
+            Upgrade Your Experience
+          </h1>
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+            Find your perfect match faster with premium features designed for the Filipino dating experience
+          </p>
+        </div>
+
+        {/* Current Subscription Status */}
+        {isSubscribed && currentSubscription && (
+          <div className="max-w-6xl mx-auto mb-8">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-pink-500">
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <div>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Crown className="w-5 h-5 text-pink-600" />
+                    <h3 className="text-xl font-bold text-gray-800">
+                      Active: {currentSubscription.name}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Expires: {currentSubscription.expiresAt ? 
+                      new Date(currentSubscription.expiresAt.toDate ? currentSubscription.expiresAt.toDate() : currentSubscription.expiresAt).toLocaleDateString() : 
+                      'N/A'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Auto-renew: {currentSubscription.autoRenew ? 'ON' : 'OFF'}
+                  </p>
+                </div>
+                
+                <button
+                  onClick={handleCancelSubscription}
+                  className="mt-4 md:mt-0 px-6 py-2 text-sm text-red-600 hover:text-red-700 font-semibold"
+                >
+                  Cancel Subscription
+                </button>
+              </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Premium Messaging</h1>
-            <p className="text-gray-600 text-lg">
-              Connect with your matches and build meaningful relationships
-            </p>
+          </div>
+        )}
+
+        {/* Pricing Cards */}
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6 mb-12">
+          {/* Free Tier */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Free</h3>
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-gray-800">₱0</span>
+            </div>
+
+            <ul className="space-y-3 mb-8">
+              {tiers.free.features.map((feature, index) => (
+                <li key={index} className="flex items-start space-x-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-600">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              disabled
+              className="w-full py-3 bg-gray-200 text-gray-500 rounded-xl font-semibold cursor-not-allowed"
+            >
+              Current Plan
+            </button>
           </div>
 
-          {/* Pricing Card */}
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8">
-            {/* Pricing Header */}
-            <div className="bg-gradient-to-r from-pink-500 to-purple-600 px-8 py-12 text-white text-center">
-              <div className="text-6xl font-bold mb-2">$0.99</div>
-              <div className="text-xl opacity-90">per month</div>
-              <p className="text-sm opacity-75 mt-2">Cancel anytime, no hidden fees</p>
+          {/* Plus Tier */}
+          <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl shadow-2xl p-6 md:p-8 text-white transform md:scale-105">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-2xl font-bold">99 Plus</h3>
+              <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">POPULAR</span>
+            </div>
+            
+            <div className="mb-6">
+              <span className="text-5xl font-bold">₱{tiers.plus.price}</span>
+              <span className="text-white/80">/month</span>
             </div>
 
-            {/* Features */}
-            <div className="px-8 py-12">
-              <h3 className="text-xl font-semibold text-gray-800 mb-8">What You Get</h3>
-              <div className="space-y-4">
-                {[
-                  'Unlimited messaging with all matches',
-                  'See read receipts and typing indicators',
-                  'Priority message delivery',
-                  'Verified badge display',
-                  'Access to verified members',
-                  'Block and report features',
-                  '24/7 customer support',
-                  'Cancel anytime',
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-pink-600 flex-shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
-                  </div>
+            <ul className="space-y-3 mb-8">
+              {tiers.plus.features.map((feature, index) => (
+                <li key={index} className="flex items-start space-x-2 text-sm">
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => handleSelectPlan('plus')}
+              disabled={currentSubscription?.id === 'plus'}
+              className="w-full py-3 bg-white text-pink-600 rounded-xl font-bold hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {currentSubscription?.id === 'plus' ? 'Current Plan' : 'Subscribe Now'}
+            </button>
+          </div>
+
+          {/* Premium Tier */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border-2 border-purple-300">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-2xl font-bold text-gray-800">99 Premium</h3>
+              <Crown className="w-6 h-6 text-purple-600" />
+            </div>
+            
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-gray-800">₱{tiers.premium.price}</span>
+              <span className="text-gray-600">/month</span>
+            </div>
+
+            <ul className="space-y-3 mb-8">
+              {tiers.premium.features.map((feature, index) => (
+                <li key={index} className="flex items-start space-x-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => handleSelectPlan('premium')}
+              disabled={currentSubscription?.id === 'premium'}
+              className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-bold hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {currentSubscription?.id === 'premium' ? 'Current Plan' : 'Get Premium'}
+            </button>
+          </div>
+        </div>
+
+        {/* Feature Comparison */}
+        <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-12">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Feature Comparison</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: Heart, label: 'Daily Likes', free: '20', plus: 'Unlimited', premium: 'Unlimited' },
+              { icon: Star, label: 'Super Likes', free: '0', plus: '5/day', premium: 'Unlimited' },
+              { icon: RotateCcw, label: 'Rewinds', free: 'No', plus: 'Yes', premium: 'Yes' },
+              { icon: Zap, label: 'Boosts', free: 'No', plus: '1/month', premium: '5/month' },
+              { icon: Eye, label: 'See Who Liked', free: 'No', plus: 'Yes', premium: 'Yes' },
+              { icon: TrendingUp, label: 'Priority Matching', free: 'No', plus: 'No', premium: 'Yes' },
+              { icon: Shield, label: 'Ad-Free', free: 'No', plus: 'Yes', premium: 'Yes' },
+            ].map((item, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-4 text-center">
+                <item.icon className="w-6 h-6 text-pink-600 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-gray-700 mb-2">{item.label}</p>
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">Free: {item.free}</p>
+                  <p className="text-xs text-pink-600">Plus: {item.plus}</p>
+                  <p className="text-xs text-purple-600">Premium: {item.premium}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Payment Modal */}
+        {showPaymentModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-800">Choose Payment Method</h3>
+                <button onClick={() => setShowPaymentModal(false)}>
+                  <X className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+                </button>
+              </div>
+
+              {/* Selected Plan Summary */}
+              <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-1">Selected Plan</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {PaymentService.SUBSCRIPTION_TIERS[selectedTier]?.name}
+                </p>
+                <p className="text-lg text-pink-600 font-semibold">
+                  ₱{PaymentService.SUBSCRIPTION_TIERS[selectedTier]?.price}/month
+                </p>
+              </div>
+
+              {/* Payment Methods */}
+              <div className="space-y-3 mb-6">
+                {Object.values(PaymentService.PAYMENT_METHODS).map((method) => (
+                  <button
+                    key={method.id}
+                    onClick={() => setSelectedPaymentMethod(method.id)}
+                    className={`w-full p-4 rounded-xl border-2 transition-all flex items-center justify-between ${
+                      selectedPaymentMethod === method.id
+                        ? 'border-pink-500 bg-pink-50'
+                        : 'border-gray-200 hover:border-pink-300'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{method.icon}</span>
+                      <span className="font-semibold text-gray-800">{method.name}</span>
+                    </div>
+                    {selectedPaymentMethod === method.id && (
+                      <CheckCircle className="w-5 h-5 text-pink-600" />
+                    )}
+                  </button>
                 ))}
               </div>
-            </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="mx-8 mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl">
-                <p className="text-red-700 text-sm font-medium">{error}</p>
-              </div>
-            )}
-
-            {/* Subscribe Button */}
-            <div className="px-8 pb-12">
+              {/* Confirm Payment */}
               <button
-                onClick={handleSubscribe}
-                disabled={loading || isProcessing}
-                className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl font-bold text-lg hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                onClick={handlePayment}
+                disabled={!selectedPaymentMethod || processing}
+                className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-bold hover:from-pink-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
-                {loading ? (
+                {processing ? (
                   <>
                     <Loader className="w-5 h-5 animate-spin" />
                     <span>Processing...</span>
                   </>
                 ) : (
-                  <>
-                    <CreditCard className="w-5 h-5" />
-                    <span>Subscribe Now</span>
-                  </>
+                  <span>Confirm Payment</span>
                 )}
               </button>
+
+              <p className="text-xs text-gray-500 text-center mt-4">
+                Secure payment powered by Philippine payment gateways
+              </p>
             </div>
           </div>
-
-          {/* FAQ Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">Common Questions</h3>
-
-            <div className="space-y-6">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">How does billing work?</h4>
-                <p className="text-gray-600">
-                  You'll be charged $0.99 per month on a recurring basis until you cancel.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Can I cancel anytime?</h4>
-                <p className="text-gray-600">
-                  Absolutely! You can cancel your subscription anytime from your account settings.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Is my payment information secure?</h4>
-                <p className="text-gray-600">
-                  Yes, we use encrypted Stripe payment processing to keep your data safe.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">What if I have billing issues?</h4>
-                <p className="text-gray-600">
-                  Contact our support team at support@99cupid.com for immediate assistance.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Trust Badges */}
-          <div className="mt-8 flex justify-center space-x-8 text-gray-600">
-            <div className="text-center">
-              <div className="text-2xl mb-2">🔒</div>
-              <p className="text-sm">Secure Payment</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl mb-2">✓</div>
-              <p className="text-sm">Cancel Anytime</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl mb-2">💬</div>
-              <p className="text-sm">Support 24/7</p>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </AppLayout>
   );
