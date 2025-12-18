@@ -22,6 +22,8 @@ import VerificationPage from './pages/VerificationPage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import AdminPanelPage from './pages/AdminPanelPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
+import SafetyCenterPage from './pages/SafetyCenterPage';
+import SafetyModerationPage from './pages/SafetyModerationPage';
 
 /**
  * AuthGuard - Redirects authenticated users away from auth pages
@@ -169,6 +171,24 @@ function AppRoutes() {
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
             <AnalyticsDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/safety"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <SafetyCenterPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/safety-moderation"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <SafetyModerationPage />
           </ProtectedRoute>
         }
       />

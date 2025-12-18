@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { X, Heart, XIcon, MapPin, Briefcase, GraduationCap, AlertCircle, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 import VerificationBadge from '../verification/VerificationBadge';
+import ReportModal from '../modals/ReportModal';
 
 export default function FullProfileView({ user, onClose, onLike, onPass, onReport }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const photos = user?.photos || [];
 
   // Swipe handlers for photo gallery
@@ -80,7 +82,7 @@ export default function FullProfileView({ user, onClose, onLike, onPass, onRepor
           </button>
           
           <button
-            onClick={onReport}
+            onClick={() => setShowReportModal(true)}
             className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
           >
             <AlertCircle className="w-5 h-5 text-white" />
@@ -310,6 +312,13 @@ export default function FullProfileView({ user, onClose, onLike, onPass, onRepor
           </button>
         </div>
       </div>
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportedUser={user}
+      />
     </div>
   );
 }
