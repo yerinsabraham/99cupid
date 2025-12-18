@@ -21,6 +21,7 @@ import ChatPage from './pages/ChatPage';
 import VerificationPage from './pages/VerificationPage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import AdminPanelPage from './pages/AdminPanelPage';
+import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 
 /**
  * AuthGuard - Redirects authenticated users away from auth pages
@@ -159,6 +160,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
             <AdminPanelPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <AnalyticsDashboardPage />
           </ProtectedRoute>
         }
       />
