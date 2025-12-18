@@ -1066,6 +1066,745 @@ TESTING_REPORT.md                           ✅ CREATED
 
 ---
 
+## 🧪 COMPREHENSIVE TESTING GUIDE
+
+### How to Test All Features
+
+This section provides step-by-step instructions to manually test every feature built in Milestone 4.
+
+---
+
+### 🔐 TEST 1: AUTHENTICATION & ONBOARDING
+
+#### 1.1 Sign Up Flow
+**Steps:**
+1. Go to https://cupid-e5874.web.app
+2. Click "Admin Login" (or /admin-login)
+3. Click "Sign up" link
+4. Enter email, password (min 6 chars), confirm password
+5. Click "Sign Up"
+
+**Expected:**
+- ✅ Account created successfully
+- ✅ Redirected to onboarding
+- ✅ Email verification sent
+
+#### 1.2 Onboarding Steps
+**Steps:**
+1. **Welcome Screen:** Click "Let's Go"
+2. **Basic Info Step:**
+   - Enter name (e.g., "Test User")
+   - Select date of birth (must be 18+)
+   - Select gender
+   - Click "Continue"
+3. **Photo Upload Step:**
+   - Click "Upload Photo" (up to 6 photos)
+   - Select images from device
+   - Verify photos display
+   - Click "Continue"
+4. **Interests Step:**
+   - Click on interests (max 10)
+   - Verify selected interests highlighted
+   - Click "Continue"
+5. **Preferences Step:**
+   - Set age range (18-50)
+   - Set max distance (50 km)
+   - Select gender preference
+   - Click "Complete Profile"
+
+**Expected:**
+- ✅ All steps complete without errors
+- ✅ Redirected to /home after completion
+- ✅ Profile data saved in Firestore
+
+**Verify in Firebase Console:**
+- Go to Firestore → users → [your user ID]
+- Check: name, dateOfBirth, gender, photos[], interests[], preferences, profileSetupComplete: true
+
+---
+
+### ✅ TEST 2: ACCOUNT VERIFICATION SYSTEM
+
+#### 2.1 Phone Verification
+**Steps:**
+1. Navigate to /verification
+2. Click "Verify Phone Number"
+3. Enter Philippine phone number (e.g., +639171234567)
+4. Click "Send Code"
+5. Wait for 60-second countdown
+6. Enter demo OTP: `123456`
+7. Click "Verify Code"
+
+**Expected:**
+- ✅ Countdown timer displays (60s → 0s)
+- ✅ "Resend Code" button enables after countdown
+- ✅ Demo OTP `123456` verifies successfully
+- ✅ Phone verification badge appears
+- ✅ Success message displays
+
+#### 2.2 Photo Verification
+**Steps:**
+1. On /verification page
+2. Click "Verify Your Photos"
+3. Choose "Upload Photo" or "Take Photo"
+4. Select/capture a clear selfie
+5. Preview displays
+6. Click "Submit for Review"
+
+**Expected:**
+- ✅ Photo uploads successfully
+- ✅ Status shows "Pending Review"
+- ✅ Submission sent to admin queue
+
+#### 2.3 ID Verification
+**Steps:**
+1. Click "Verify Government ID"
+2. Select ID type (e.g., "Philippine Passport")
+3. Enter ID number
+4. Upload front photo of ID
+5. Upload back photo of ID
+6. Click "Submit for Review"
+
+**Expected:**
+- ✅ Both photos upload
+- ✅ ID number saved
+- ✅ Status: "Pending Admin Review"
+- ✅ Appears in admin verification queue
+
+#### 2.4 Admin Verification Review
+**Steps:**
+1. Login as admin (99cupidlove@gmail.com or yerinssaibs@gmail.com)
+2. Navigate to /admin
+3. Click "Verification Requests" tab
+4. See pending verifications
+5. Click "Approve" or "Reject" on any request
+6. Enter rejection reason if rejecting
+
+**Expected:**
+- ✅ Pending requests display
+- ✅ Can filter by type (phone/photo/ID)
+- ✅ Approve updates user's verification status
+- ✅ User sees updated badge on profile
+
+---
+
+### 🎴 TEST 3: SWIPE & MATCHING
+
+#### 3.1 Home Feed
+**Steps:**
+1. Navigate to /home
+2. View profile cards
+
+**Expected:**
+- ✅ Profile cards display with photo, name, age, location
+- ✅ Verification badges show (if verified)
+- ✅ Compatibility score badge displays (if algorithm enabled)
+- ✅ Cards load from Firestore
+
+#### 3.2 Swipe Actions
+**Steps:**
+1. Swipe card left (or click X button) = Pass
+2. Swipe card right (or click ❤️ button) = Like
+3. Try multiple swipes
+
+**Expected:**
+- ✅ Card animates and disappears
+- ✅ Next card appears
+- ✅ Like/pass recorded in Firestore (likes collection)
+- ✅ If mutual like → Match modal appears
+
+#### 3.3 Full Profile View
+**Steps:**
+1. Tap/click on profile card (not swipe gesture)
+2. Full profile modal opens
+
+**Expected:**
+- ✅ Modal covers full screen
+- ✅ Photo gallery displays (swipe left/right to change photos)
+- ✅ Arrow buttons navigate photos
+- ✅ Dot indicators show current photo (1/6)
+- ✅ Complete profile info shows (bio, interests, work, education)
+- ✅ Compatibility score displays (if enabled)
+- ✅ Match reasons show (e.g., "You both love Travel")
+- ✅ Like/Pass buttons at bottom work
+- ✅ Report button opens report modal
+- ✅ Close (X) button exits modal
+
+#### 3.4 Matching Algorithm
+**Steps:**
+1. On /home, click "Use Smart Matches" toggle
+2. Toggle ON to enable algorithm
+3. Click "Show Compatibility Scores" toggle
+
+**Expected:**
+- ✅ Users reorder by compatibility score
+- ✅ Scores display on cards (e.g., "78% Compatible")
+- ✅ "Smart Matches" indicator shows
+- ✅ Match reasons accurate in full profile
+
+**Test Scoring:**
+- Users with same interests = higher score
+- Users in same city = higher score
+- Verified users = bonus points
+- Recently active = bonus points
+
+---
+
+### 💳 TEST 4: PAYMENT & SUBSCRIPTIONS
+
+#### 4.1 View Subscription Plans
+**Steps:**
+1. Navigate to /subscription
+2. View 3 tiers: Free, Plus (₱299), Premium (₱599)
+
+**Expected:**
+- ✅ All 3 plans display
+- ✅ Features list per plan shows
+- ✅ Current plan highlighted
+- ✅ Pricing in PHP currency
+- ✅ Feature comparison grid visible
+
+#### 4.2 Purchase Subscription (Demo)
+**Steps:**
+1. Click "Select Plus" or "Select Premium"
+2. Payment modal opens
+3. Select payment method (GCash, PayMaya, Card, PayPal)
+4. Click "Pay Now"
+5. Wait 1.5 seconds (demo processing)
+
+**Expected:**
+- ✅ Modal displays with 4 payment methods
+- ✅ Selected method highlights
+- ✅ Processing indicator shows
+- ✅ Success message displays
+- ✅ Modal closes
+- ✅ Subscription status updates to Plus/Premium
+- ✅ Expiry date shows (30 days from now)
+
+**Verify in Firestore:**
+- Check subscriptions/[userId] document
+- tier: "plus" or "premium"
+- startDate, endDate set
+- Check transactions/[transactionId]
+- amount, method, status: "completed"
+
+#### 4.3 Subscription Management
+**Steps:**
+1. After subscribing, see active subscription banner
+2. Click "Cancel Subscription"
+3. Confirm cancellation
+
+**Expected:**
+- ✅ Active subscription displays
+- ✅ Cancel button available
+- ✅ Confirmation dialog appears
+- ✅ Subscription cancelled (auto-renewal off)
+- ✅ Still active until expiry date
+
+#### 4.4 Feature Limits
+**Steps:**
+1. As Free user, try to like 11 users in one day
+2. Limit reached notification should appear
+
+**Expected:**
+- ✅ Free tier: 10 likes/day limit enforced
+- ✅ Upgrade prompt shows
+- ✅ Plus tier: 100 likes/day
+- ✅ Premium tier: Unlimited
+
+---
+
+### 📊 TEST 5: ANALYTICS DASHBOARD
+
+#### 5.1 View Analytics (Admin Only)
+**Steps:**
+1. Login as admin
+2. Navigate to /analytics
+
+**Expected:**
+- ✅ Dashboard loads with metrics
+- ✅ Real-time banner shows (last 24h):
+  - Active users
+  - New signups
+  - Swipes
+  - Matches
+  - Messages
+- ✅ Key metric cards display:
+  - Total Users
+  - New Signups
+  - Total Matches
+  - Subscriptions
+
+#### 5.2 Date Range Filtering
+**Steps:**
+1. Change date range dropdown
+2. Select "Last 7 days", "Last 30 days", "Last 90 days"
+
+**Expected:**
+- ✅ Data refreshes for selected range
+- ✅ Metrics update accordingly
+- ✅ Charts/graphs adjust
+
+#### 5.3 User Journey Funnel
+**Steps:**
+1. Scroll to "User Journey Funnel" section
+
+**Expected:**
+- ✅ 5 stages display:
+  1. Sign Up
+  2. Complete Profile
+  3. Start Swiping
+  4. Get Matched
+  5. Send Message
+- ✅ Progress bars show percentage
+- ✅ Drop-off percentages displayed
+- ✅ Numbers accurate
+
+#### 5.4 Verify Event Tracking
+**Steps:**
+1. Perform action (e.g., swipe right)
+2. Check Firestore → analytics_events collection
+3. Find recent event with your user ID
+
+**Expected:**
+- ✅ Event created with:
+  - eventType: "swipe_right"
+  - userId: [your ID]
+  - timestamp
+  - sessionId
+  - metadata (targetUserId, compatibilityScore)
+
+---
+
+### 🛡️ TEST 6: SAFETY & MODERATION
+
+#### 6.1 Safety Center
+**Steps:**
+1. Navigate to /safety
+
+**Expected:**
+- ✅ Page loads with safety information
+- ✅ Community guidelines display (6 guidelines)
+- ✅ Safety tips listed (8 tips)
+- ✅ Emergency resources show (4 Philippine hotlines):
+  - National Emergency (911)
+  - PNP Women & Children Protection
+  - DSWD Crisis Intervention
+  - Mental Health Hotline
+- ✅ Quick actions work (blocked users, emergency help)
+
+#### 6.2 Report User
+**Steps:**
+1. Open any user's full profile
+2. Click report button (⚠️ icon)
+3. Report modal opens
+4. Select category (e.g., "Inappropriate Photos")
+5. Enter description
+6. Check "Block this user" (optional)
+7. Click "Submit Report"
+
+**Expected:**
+- ✅ Modal displays 10 categories with descriptions
+- ✅ Severity badges show (URGENT/HIGH)
+- ✅ Description textarea required
+- ✅ Privacy notice displays
+- ✅ Submit creates report in Firestore
+- ✅ Success confirmation shows
+- ✅ Modal closes after 2 seconds
+- ✅ User blocked if checkbox selected
+
+**Verify in Firestore:**
+- reports/[reportId] created with:
+  - reporterId
+  - reportedUserId
+  - category
+  - description
+  - status: "pending"
+  - severity
+
+#### 6.3 Block User
+**Steps:**
+1. Block a user (via report or other method)
+2. Check blocked users list
+
+**Expected:**
+- ✅ Block record created in Firestore (blocks collection)
+- ✅ User disappears from feed
+- ✅ Existing matches removed
+- ✅ Can view blocked users list
+- ✅ Can unblock user
+
+#### 6.4 Safety Moderation (Admin)
+**Steps:**
+1. Login as admin
+2. Navigate to /safety-moderation
+
+**Expected:**
+- ✅ Moderation dashboard loads
+- ✅ Statistics cards show:
+  - Total Reports
+  - Pending Reports
+  - Resolved Reports
+  - Total Blocks
+- ✅ Filter tabs work (Pending, Under Review, Action Taken, All)
+- ✅ Report cards display with:
+  - Severity badge (color-coded)
+  - Category
+  - Description
+  - Timestamp
+  - Status
+
+#### 6.5 Take Moderation Action
+**Steps:**
+1. On pending report, click:
+   - "Warning" - Issues warning
+   - "Suspend 24h" - Suspends for 24 hours
+   - "Ban" - Permanent ban
+   - "Dismiss" - No action needed
+
+**Expected:**
+- ✅ Action applies to reported user
+- ✅ User document updates with:
+  - lastSafetyAction
+  - lastSafetyActionReason
+  - accountStatus (suspended/banned)
+  - suspendedUntil (for temporary suspensions)
+- ✅ Report status changes to "action_taken" or "dismissed"
+- ✅ Action history displays on report card
+
+---
+
+### 👤 TEST 7: PROFILE MANAGEMENT
+
+#### 7.1 View Own Profile
+**Steps:**
+1. Click profile icon in navigation
+2. Navigate to /profile
+
+**Expected:**
+- ✅ Profile page displays
+- ✅ Photos show
+- ✅ Name, age, location display
+- ✅ Bio displays
+- ✅ Interests show
+- ✅ Verification badges visible
+
+#### 7.2 Edit Profile
+**Steps:**
+1. Click "Edit Profile" button
+2. Navigate to /edit-profile
+3. Make changes:
+   - Update bio
+   - Change photos
+   - Add/remove interests
+   - Update work/education
+4. Click "Save"
+
+**Expected:**
+- ✅ Edit page loads with current data
+- ✅ All fields editable
+- ✅ Photo upload/remove works
+- ✅ Save button updates Firestore
+- ✅ Changes reflect immediately
+- ✅ Redirect to /profile after save
+
+---
+
+### 💬 TEST 8: MESSAGING
+
+#### 8.1 View Matches
+**Steps:**
+1. Navigate to /matches
+
+**Expected:**
+- ✅ All matches display in grid
+- ✅ Match cards show photo, name
+- ✅ Click match opens chat
+
+#### 8.2 Send Message
+**Steps:**
+1. Click on a match
+2. Navigate to /chat/[chatId]
+3. Type message in input
+4. Click send or press Enter
+
+**Expected:**
+- ✅ Chat page loads
+- ✅ Message history displays
+- ✅ Message sends successfully
+- ✅ Appears in chat immediately
+- ✅ Timestamp displays
+
+**Verify Real-time:**
+1. Open same chat in another browser/incognito
+2. Send message from one
+3. Should appear in other instantly
+
+---
+
+### 🔧 TEST 9: ADMIN PANEL
+
+#### 9.1 Access Admin Panel
+**Steps:**
+1. Login as admin (99cupidlove@gmail.com or yerinssaibs@gmail.com)
+2. Navigate to /admin
+
+**Expected:**
+- ✅ Admin panel loads
+- ✅ Statistics display
+- ✅ Tabs available:
+  - Overview
+  - Users
+  - Verification Requests
+  - Reports
+  - Analytics
+
+#### 9.2 Manage Users
+**Steps:**
+1. Click "Users" tab
+2. View user list
+3. Search for specific user
+4. Click on user to view details
+
+**Expected:**
+- ✅ User list loads
+- ✅ Search works
+- ✅ User details display
+- ✅ Can view user's profile
+- ✅ Can see verification status
+
+---
+
+### 📱 TEST 10: MOBILE RESPONSIVENESS
+
+#### 10.1 Test on Mobile Device
+**Steps:**
+1. Open https://cupid-e5874.web.app on phone
+2. Test all features
+
+**Expected:**
+- ✅ All pages responsive
+- ✅ Navigation menu works
+- ✅ Swipe gestures work
+- ✅ Modals display correctly
+- ✅ Forms usable
+- ✅ Buttons accessible
+- ✅ Images scale properly
+
+#### 10.2 Test Different Screen Sizes
+**In Browser:**
+1. Open DevTools (F12)
+2. Toggle device toolbar
+3. Test: iPhone (375px), Android (360px), Tablet (768px)
+
+**Expected:**
+- ✅ Layout adapts to screen size
+- ✅ No horizontal scrolling
+- ✅ Touch targets adequate (44px min)
+- ✅ Text readable
+
+---
+
+### 🌐 TEST 11: CROSS-BROWSER
+
+#### 11.1 Test Different Browsers
+**Browsers to test:**
+- Chrome (primary)
+- Safari
+- Firefox
+- Edge
+
+**Expected:**
+- ✅ All features work in all browsers
+- ✅ Styling consistent
+- ✅ No console errors
+
+---
+
+### 🔒 TEST 12: SECURITY & PERMISSIONS
+
+#### 12.1 Unauthenticated Access
+**Steps:**
+1. Logout
+2. Try to access /home, /profile, /matches, etc.
+
+**Expected:**
+- ✅ Redirected to landing page
+- ✅ Cannot access protected routes
+- ✅ Login required
+
+#### 12.2 Data Privacy
+**Steps:**
+1. Login as User A
+2. Try to access User B's data directly (Firestore Console)
+
+**Expected:**
+- ✅ Firestore rules prevent unauthorized access
+- ✅ Users can only read/write own data
+- ✅ Admin-only collections protected
+
+#### 12.3 Admin Access
+**Steps:**
+1. Login as non-admin user
+2. Try to access /admin, /analytics, /safety-moderation
+
+**Expected:**
+- ⚠️ Currently allowed (TODO: Add admin check in ProtectedRoute)
+- Recommendation: Add `requireAdmin` prop to ProtectedRoute
+
+---
+
+### ⚡ TEST 13: PERFORMANCE
+
+#### 13.1 Page Load Times
+**Steps:**
+1. Open DevTools → Network tab
+2. Hard refresh each page (Ctrl+Shift+R)
+3. Check load time
+
+**Expected:**
+- ✅ Landing page: < 2s
+- ✅ Home page: < 2s
+- ✅ Profile page: < 1.5s
+- ✅ Analytics: < 3s
+
+#### 13.2 Image Loading
+**Steps:**
+1. View profiles with multiple photos
+2. Check image load times
+
+**Expected:**
+- ✅ Images load progressively
+- ✅ Lazy loading implemented
+- ✅ No layout shift
+
+---
+
+### 🐛 TEST 14: ERROR HANDLING
+
+#### 14.1 Network Errors
+**Steps:**
+1. Open DevTools → Network tab
+2. Set to "Offline"
+3. Try to perform actions
+
+**Expected:**
+- ✅ Error messages display
+- ✅ App doesn't crash
+- ✅ Retry mechanisms work
+
+#### 14.2 Invalid Input
+**Steps:**
+1. Try to submit forms with invalid data
+2. Test empty fields, wrong formats
+
+**Expected:**
+- ✅ Validation errors display
+- ✅ Clear error messages
+- ✅ Form highlights errors
+
+---
+
+### ✅ TESTING CHECKLIST SUMMARY
+
+Use this checklist to verify all features:
+
+**Authentication & Onboarding**
+- [ ] Sign up works
+- [ ] Login works
+- [ ] Onboarding completes (4 steps)
+- [ ] Profile data saves
+
+**Verification System**
+- [ ] Phone verification (demo OTP: 123456)
+- [ ] Photo verification submits
+- [ ] ID verification submits
+- [ ] Admin can review/approve
+- [ ] Badges display
+
+**Swipe & Match**
+- [ ] Cards display
+- [ ] Swipe left/right works
+- [ ] Match modal appears
+- [ ] Full profile opens on tap
+- [ ] Photo gallery swipes
+
+**Matching Algorithm**
+- [ ] Toggle enables smart matches
+- [ ] Compatibility scores display
+- [ ] Match reasons accurate
+- [ ] Users reorder by score
+
+**Payment System**
+- [ ] 3 tiers display
+- [ ] Demo payment processes
+- [ ] Subscription activates
+- [ ] Cancel works
+- [ ] Feature limits enforced
+
+**Analytics**
+- [ ] Dashboard loads (admin)
+- [ ] Metrics display
+- [ ] Real-time data updates
+- [ ] Funnel visualizes
+- [ ] Events track
+
+**Safety Tools**
+- [ ] Safety center loads
+- [ ] Report modal works
+- [ ] Block user works
+- [ ] Admin moderation loads
+- [ ] Actions apply (warning/suspend/ban)
+
+**Profile & Messaging**
+- [ ] View profile
+- [ ] Edit profile
+- [ ] Send messages
+- [ ] Real-time updates
+
+**Admin Panel**
+- [ ] Admin dashboard loads
+- [ ] User management works
+- [ ] Verification queue works
+
+**Mobile & Browser**
+- [ ] Mobile responsive
+- [ ] Cross-browser compatible
+- [ ] Touch gestures work
+
+**Security**
+- [ ] Protected routes secure
+- [ ] Firestore rules enforce
+- [ ] No data leaks
+
+**Performance**
+- [ ] Load times acceptable
+- [ ] No console errors
+- [ ] Images optimized
+
+---
+
+### 🚨 KNOWN ISSUES & LIMITATIONS
+
+**Expected Limitations (Beta):**
+1. **SMS OTP**: Demo mode only (123456 always works)
+   - Real SMS integration pending
+   
+2. **Payment Gateway**: Demo processing only
+   - No real charges
+   - All payment methods simulate success
+   
+3. **Email Notifications**: Not implemented
+   - Users not notified of bans/suspensions via email
+   
+4. **Push Notifications**: Not available
+   
+5. **Bundle Size**: 772 kB (optimizable later)
+
+**Not Critical for Beta Launch**
+
+---
+
 ## 🔗 RELATED DOCUMENTS
 - [Milestone 1 Complete](./milestoneone.md)
 - [Milestone 3 Complete](./MILESTONE3_COMPLETE.md)
