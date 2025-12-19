@@ -268,33 +268,33 @@ export default function AdminPanelPage() {
                           className="border-b hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-6 py-4 text-sm text-gray-800">
-                            {user.displayName}
+                            {user.name || user.displayName || user.email?.split('@')[0] || 'No name'}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">
-                            {user.email}
+                            {user.email || 'No email'}
                           </td>
                           <td className="px-6 py-4 text-sm">
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                user.accountStatus === 'active'
+                                (user.accountStatus || 'active') === 'active'
                                   ? 'bg-green-100 text-green-700'
-                                  : user.accountStatus === 'suspended'
+                                  : (user.accountStatus || 'active') === 'suspended'
                                   ? 'bg-yellow-100 text-yellow-700'
                                   : 'bg-red-100 text-red-700'
                               }`}
                             >
-                              {user.accountStatus}
+                              {user.accountStatus || 'active'}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            {user.isVerified ? (
+                            {user.verification?.isVerified || user.isVerified ? (
                               <span className="text-green-600 font-semibold">✓</span>
                             ) : (
                               <span className="text-gray-400">✗</span>
                             )}
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            {user.accountStatus === 'active' ? (
+                            {(user.accountStatus || 'active') === 'active' ? (
                               <button
                                 onClick={() => handleSuspendUser(user.id)}
                                 className="text-red-600 hover:text-red-800 font-semibold"
@@ -326,10 +326,10 @@ export default function AdminPanelPage() {
                     <div key={user.id} className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-800">{user.displayName}</h3>
-                          <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                          <h3 className="font-semibold text-gray-800">{user.name || user.displayName || user.email?.split('@')[0] || 'No name'}</h3>
+                          <p className="text-xs text-gray-600 truncate">{user.email || 'No email'}</p>
                         </div>
-                        {user.isVerified && (
+                        {(user.verification?.isVerified || user.isVerified) && (
                           <span className="text-green-600 font-semibold ml-2">✓</span>
                         )}
                       </div>
@@ -337,17 +337,17 @@ export default function AdminPanelPage() {
                       <div className="flex items-center justify-between">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            user.accountStatus === 'active'
+                            (user.accountStatus || 'active') === 'active'
                               ? 'bg-green-100 text-green-700'
-                              : user.accountStatus === 'suspended'
+                              : (user.accountStatus || 'active') === 'suspended'
                               ? 'bg-yellow-100 text-yellow-700'
                               : 'bg-red-100 text-red-700'
                           }`}
                         >
-                          {user.accountStatus}
+                          {user.accountStatus || 'active'}
                         </span>
                         
-                        {user.accountStatus === 'active' ? (
+                        {(user.accountStatus || 'active') === 'active' ? (
                           <button
                             onClick={() => handleSuspendUser(user.id)}
                             className="px-3 py-1 text-xs text-red-600 hover:text-red-800 font-semibold"

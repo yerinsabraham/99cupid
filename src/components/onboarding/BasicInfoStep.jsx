@@ -3,6 +3,7 @@ import { Calendar, User, MapPin } from 'lucide-react';
 
 export default function BasicInfoStep({ data, onUpdate, onNext, onBack }) {
   const [formData, setFormData] = useState({
+    name: data.name || '',
     dateOfBirth: data.dateOfBirth || '',
     gender: data.gender || '',
     location: data.location || ''
@@ -18,6 +19,10 @@ export default function BasicInfoStep({ data, onUpdate, onNext, onBack }) {
 
   const validate = () => {
     const newErrors = {};
+    
+    if (!formData.name || formData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    }
     
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required';
@@ -61,6 +66,26 @@ export default function BasicInfoStep({ data, onUpdate, onNext, onBack }) {
         </div>
 
         <div className="space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Your Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                placeholder="Enter your name"
+                className={`w-full pl-11 pr-4 py-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent`}
+              />
+            </div>
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            )}
+          </div>
+
           {/* Date of Birth */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -12,6 +12,7 @@ import PhotoUploadStepV2 from '../components/onboarding/PhotoUploadStepV2';
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [onboardingData, setOnboardingData] = useState({
+    name: '',
     dateOfBirth: '',
     gender: '',
     lookingFor: '',
