@@ -23,8 +23,14 @@ export default function ProtectedRoute({
   }
 
   // Require profile setup
-  if (requireProfileSetup && !userProfile?.profileSetupComplete) {
-    return <Navigate to="/onboarding" replace />;
+  if (requireProfileSetup) {
+    console.log('ProtectedRoute - userProfile:', userProfile);
+    console.log('ProtectedRoute - profileSetupComplete:', userProfile?.profileSetupComplete);
+    
+    if (!userProfile?.profileSetupComplete) {
+      console.log('ProtectedRoute - Redirecting to onboarding');
+      return <Navigate to="/onboarding" replace />;
+    }
   }
 
   return children;

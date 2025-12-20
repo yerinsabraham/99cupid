@@ -40,10 +40,19 @@ function AuthGuard({ children }) {
   }
 
   if (currentUser) {
-    // Check if profile setup is complete
-    if (!userProfile?.profileSetupComplete) {
+    // Debug log to see what we have
+    console.log('AuthGuard - userProfile:', userProfile);
+    console.log('AuthGuard - profileSetupComplete:', userProfile?.profileSetupComplete);
+    
+    // Check if profile setup is complete (explicit check for true/false)
+    const isProfileComplete = userProfile?.profileSetupComplete === true;
+    
+    if (!isProfileComplete) {
+      console.log('AuthGuard - Redirecting to onboarding');
       return <Navigate to="/onboarding" replace />;
     }
+    
+    console.log('AuthGuard - Redirecting to home');
     return <Navigate to="/home" replace />;
   }
 

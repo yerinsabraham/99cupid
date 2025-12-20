@@ -94,6 +94,14 @@ export function AuthProvider({ children }) {
         });
 
         await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
+        
+        // Set the profile state for new users
+        setUserProfile({ id: user.uid, ...newUser.toFirestore() });
+      } else {
+        // Load existing user profile into state
+        const profileData = { id: userDoc.id, ...userDoc.data() };
+        setUserProfile(profileData);
+        console.log('Google sign-in - Loaded existing profile:', profileData);
       }
 
       return { success: true };
