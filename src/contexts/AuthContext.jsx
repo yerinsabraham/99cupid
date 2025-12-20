@@ -280,25 +280,31 @@ export function AuthProvider({ children }) {
         setCurrentUser(user);
 
         if (user) {
+          // Keep loading true while fetching profile
+          setLoading(true);
+          
           // Fetch user profile from Firestore
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
             // Use raw data directly instead of UserModel to preserve all fields
             const profileData = { id: userDoc.id, ...userDoc.data() };
             setUserProfile(profileData);
-            console.log('Loaded user profile:', profileData); // Debug log
+            console.log('Loaded user profile:', profileData);
           } else {
             // Create user profile if it doesn't exist
             const newUser = UserModel.fromAuthUser(user);
             await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
             setUserProfile({ id: user.uid, ...newUser.toFirestore() });
           }
+          
+          // Now we can set loading to false
+          setLoading(false);
         } else {
           setUserProfile(null);
+          setLoading(false);
         }
       } catch (err) {
         console.error('Error in auth state listener:', err);
-      } finally {
         setLoading(false);
       }
     });
