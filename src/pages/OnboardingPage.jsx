@@ -24,7 +24,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { currentUser, updateUserProfile } = useAuth();
+  const { currentUser, updateUserProfile, refreshUserProfile } = useAuth();
 
   const updateOnboardingData = (data) => {
     setOnboardingData(prev => ({ ...prev, ...data }));
@@ -58,13 +58,11 @@ export default function OnboardingPage() {
       const verifyDoc = await getDoc(doc(db, 'users', currentUser.uid));
       console.log('Verified profile after save:', verifyDoc.data());
 
-      // Update the context to reflect the completed profile
-      await updateUserProfile({ profileSetupComplete: true });
+      // Force refresh the profile from Firestore to update context
+      await refreshUserProfile();
 
-      // Small delay to ensure state is updated
-      setTimeout(() => {
-        navigate('/home', { replace: true });
-      }, 100);
+      // Navigate to home
+      navigate('/home', { replace: true });
     } catch (error) {
       console.error('Error saving profile:', error);
       alert('Failed to save profile. Please try again.');

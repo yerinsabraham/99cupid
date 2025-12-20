@@ -169,15 +169,39 @@ export function AuthProvider({ children }) {
 
       await updateDoc(userRef, updateData);
 
-      // Update local profile state
-      setUserProfile(prev => ({
-        ...prev,
-        ...updateData
-      }));
+      // Refresh profile from Firestore to ensure we have latest data
+      const updatedDoc = await getDoc(userRef);
+      if (updatedDoc.exists()) {
+        const freshProfile = { id: updatedDoc.id, ...updatedDoc.data() };
+        setUserProfile(freshProfile);
+      }
 
       return { success: true };
     } catch (error) {
       return handleAuthError(error);
+    }
+  }, [currentUser]);
+
+  /**
+   * Force refresh user profile from Firestore
+   */
+  const refreshUserProfile = useCallback(async () => {
+    try {
+      if (!currentUser) {
+        return { success: false, message: 'No user logged in' };
+      }
+
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      if (userDoc.exists()) {
+        const freshProfile = { id: userDoc.id, ...userDoc.data() };
+        setUserProfile(freshProfile);
+        return { success: true, profile: freshProfile };
+      }
+
+      return { success: false, message: 'Profile not found' };
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      return { success: false, message: error.message };
     }
   }, [currentUser]);
 
@@ -251,12 +275,15 @@ export function AuthProvider({ children }) {
           // Fetch user profile from Firestore
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
-            setUserProfile(UserModel.fromFirestore(userDoc));
+            // Use raw data directly instead of UserModel to preserve all fields
+            const profileData = { id: userDoc.id, ...userDoc.data() };
+            setUserProfile(profileData);
+            console.log('Loaded user profile:', profileData); // Debug log
           } else {
             // Create user profile if it doesn't exist
             const newUser = UserModel.fromAuthUser(user);
             await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
-            setUserProfile(newUser);
+            setUserProfile({ id: user.uid, ...newUser.toFirestore() });
           }
         } else {
           setUserProfile(null);
@@ -282,6 +309,7 @@ export function AuthProvider({ children }) {
     resetPassword,
     resendVerification,
     updateUserProfile,
+    refreshUserProfile,
     signInWithGoogle,
   };
 
