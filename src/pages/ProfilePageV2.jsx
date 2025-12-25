@@ -7,6 +7,7 @@ import { LogOut, Edit2, Camera, MapPin, Heart, CheckCircle, Shield, Settings } f
 import AppLayout from '../components/layout/AppLayout';
 import HeartLoader from '../components/common/HeartLoader';
 import VerificationBadge from '../components/verification/VerificationBadge';
+import ProfileCompletion from '../components/common/ProfileCompletion';
 import AdminService from '../services/AdminService';
 
 export default function ProfilePage() {
@@ -115,9 +116,17 @@ export default function ProfilePage() {
             )}
 
             {/* Edit Button */}
-            <button className="absolute top-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => navigate('/edit-profile')}
+              className="absolute top-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors"
+            >
               <Edit2 className="w-5 h-5 text-gray-700" />
             </button>
+          </div>
+
+          {/* Profile Completion - Show only if less than 100% */}
+          <div className="px-6 pt-6">
+            <ProfileCompletion profile={profile} showAlways={false} />
           </div>
 
           {/* Additional Photos Grid */}
@@ -245,6 +254,15 @@ export default function ProfilePage() {
             >
               <Edit2 className="w-5 h-5" />
               <span>Edit Profile</span>
+            </button>
+
+            {/* Settings Button */}
+            <button 
+              onClick={() => navigate('/settings')}
+              className="w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-2xl font-semibold transition-all flex items-center justify-center space-x-2"
+            >
+              <Settings className="w-5 h-5" />
+              <span>Settings</span>
             </button>
           </div>
         </div>

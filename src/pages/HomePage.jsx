@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Sparkles, TrendingUp } from 'lucide-react';
+import { Heart, Sparkles, TrendingUp, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import AppLayout from '../components/layout/AppLayout';
 import SwipeCard from '../components/swipe/SwipeCard';
 import MatchModal from '../components/modals/MatchModal';
+import FilterModal from '../components/modals/FilterModal';
 import FullProfileView from '../components/profile/FullProfileView';
 import HeartLoader from '../components/common/HeartLoader';
 import { getDemoUsers } from '../utils/demoUsers';
@@ -26,6 +27,14 @@ export default function HomePage() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [useMatchingAlgorithm, setUseMatchingAlgorithm] = useState(true);
   const [showCompatibilityScore, setShowCompatibilityScore] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState({
+    location: '',
+    maxDistance: 'any',
+    ageMin: 18,
+    ageMax: 50,
+    gender: 'everyone'
+  });
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -33,9 +42,10 @@ export default function HomePage() {
         let profiles = [];
 
         if (currentUser && useMatchingAlgorithm) {
-          // Use intelligent matching algorithm
+          // Use intelligent matching algorithm with filters
           console.log('Using matching algorithm for user:', currentUser.uid);
-          profiles = await MatchingService.getMatches(currentUser.uid, 50);
+          console.log('Applied filters:', filters);
+          profiles = await MatchingService.getMatches(currentUser.uid, 50, filters);
           console.log(`Loaded ${profiles.length} matched profiles`);
         } else {
           // Fallback to demo users
@@ -64,7 +74,7 @@ export default function HomePage() {
     };
 
     loadUsers();
-  }, [currentUser, useMatchingAlgorithm]);
+  }, [currentUser, useMatchingAlgorithm, filters]);
 
   const handleSwipe = async (direction) => {
     if (!currentUser || swiping) return;
@@ -74,7 +84,13 @@ export default function HomePage() {
 
     try {
       if (direction === 'right') {
-        // User liked someone
+        // User liked someone - record both the like AND the swipe
+        console.log('Swiping right (like) on user:', currentUser_.uid);
+        
+        // Record the swipe first
+        await SwipeService.recordSwipe(currentUser.uid, currentUser_.uid, 'right');
+        
+        // Then handle the like logic (which checks for matches)
         const result = await SwipeService.likeUser(
           currentUser.uid,
           currentUser_.uid,
@@ -88,7 +104,8 @@ export default function HomePage() {
           setShowMatchModal(true);
         }
       } else {
-        // User passed on someone
+        // User passed on someone - record the swipe
+        console.log('Swiping left (pass) on user:', currentUser_.uid);
         await SwipeService.passOnUser(currentUser.uid, currentUser_.uid);
       }
 
@@ -136,6 +153,21 @@ export default function HomePage() {
     alert('Report functionality coming soon!');
   };
 
+  const handleApplyFilters = (newFilters) => {
+    console.log('Applying new filters:', newFilters);
+    setFilters(newFilters);
+    setLoading(true);
+    setCurrentIndex(0); // Reset to first card
+  };
+
+  const hasActiveFilters = () => {
+    return filters.location !== '' || 
+           filters.maxDistance !== 'any' || 
+           filters.ageMin !== 18 || 
+           filters.ageMax !== 50 || 
+           filters.gender !== 'everyone';
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -159,27 +191,58 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-gray-800">Discover</h1>
             </div>
 
-            {/* Toggle Compatibility Score */}
-            <button
-              onClick={() => setShowCompatibilityScore(!showCompatibilityScore)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                showCompatibilityScore
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
-                  : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              <div className="flex items-center space-x-1">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>{showCompatibilityScore ? 'Score: ON' : 'Score: OFF'}</span>
-              </div>
-            </button>
+            <div className="flex items-center space-x-2">
+              {/* Filter Button */}
+              <button
+                onClick={() => setShowFilterModal(true)}
+                className={`relative px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center space-x-1 ${
+                  hasActiveFilters()
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>Filters</span>
+                {hasActiveFilters() && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px]">
+                    !
+                  </span>
+                )}
+              </button>
+
+              {/* Toggle Compatibility Score */}
+              <button
+                onClick={() => setShowCompatibilityScore(!showCompatibilityScore)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  showCompatibilityScore
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                <div className="flex items-center space-x-1">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{showCompatibilityScore ? 'Score: ON' : 'Score: OFF'}</span>
+                  <span className="sm:hidden">%</span>
+                </div>
+              </button>
+            </div>
           </div>
 
           {/* Algorithm Info */}
           {currentUser && useMatchingAlgorithm && (
-            <div className="mt-3 flex items-center space-x-2 text-sm text-gray-600">
-              <Sparkles className="w-4 h-4 text-purple-500" />
-              <span>Smart matches based on your preferences</span>
+            <div className="mt-3 flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Sparkles className="w-4 h-4 text-purple-500" />
+                <span>Smart matches based on your preferences</span>
+              </div>
+              {hasActiveFilters() && (
+                <button
+                  onClick={() => setFilters({ location: '', maxDistance: 'any', ageMin: 18, ageMax: 50, gender: 'everyone' })}
+                  className="text-xs text-pink-600 hover:text-pink-700 font-medium"
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -236,6 +299,14 @@ export default function HomePage() {
         onClose={() => setShowMatchModal(false)}
         onStartChat={handleStartChat}
         match={matchData}
+      />
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={filters}
       />
 
       {/* Full Profile View */}

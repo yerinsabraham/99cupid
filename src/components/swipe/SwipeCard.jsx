@@ -16,6 +16,12 @@ export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled
 
   const onTouchStart = (e) => {
     if (disabled) return;
+    
+    // Don't start dragging if user tapped on a button
+    if (e.target.closest('button')) {
+      return;
+    }
+    
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
     setTouchStartTime(Date.now());
@@ -69,13 +75,25 @@ export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled
     transition: isDragging ? 'none' : 'transform 0.3s ease-out',
   };
 
+  // Handle mouse clicks (for desktop) to open profile view
+  const handleCardClick = (e) => {
+    // Don't open profile if user clicked on a button
+    if (e.target.closest('button')) {
+      return;
+    }
+    if (onTapProfile && !isDragging) {
+      onTapProfile(user);
+    }
+  };
+
   return (
     <div
-      className="absolute inset-0 cursor-grab active:cursor-grabbing"
+      className="absolute inset-0 cursor-pointer"
       style={cardStyle}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      onClick={handleCardClick}
     >
       <div className="relative w-full h-full bg-white rounded-3xl shadow-2xl overflow-hidden select-none">
         {/* Profile Image */}
@@ -172,14 +190,22 @@ export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled
         {/* Action Buttons - Positioned outside the scrollable area */}
         <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-6 px-6 pointer-events-none">
           <button
-            onClick={() => onSwipe('left')}
-            className="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 hover:scale-110 transition-all duration-300 pointer-events-auto"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent tap from triggering profile view
+              onSwipe('left');
+            }}
+            disabled={disabled}
+            className="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 hover:scale-110 transition-all duration-300 pointer-events-auto disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-7 h-7 text-red-500" />
           </button>
           <button
-            onClick={() => onSwipe('right')}
-            className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full shadow-xl flex items-center justify-center hover:from-pink-600 hover:to-pink-700 hover:scale-110 transition-all duration-300 pointer-events-auto"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent tap from triggering profile view
+              onSwipe('right');
+            }}
+            disabled={disabled}
+            className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full shadow-xl flex items-center justify-center hover:from-pink-600 hover:to-pink-700 hover:scale-110 transition-all duration-300 pointer-events-auto disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Heart className="w-7 h-7 text-white fill-white" />
           </button>

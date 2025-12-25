@@ -24,6 +24,7 @@ import AdminPanelPage from './pages/AdminPanelPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import SafetyCenterPage from './pages/SafetyCenterPage';
 import SafetyModerationPage from './pages/SafetyModerationPage';
+import SettingsPage from './pages/SettingsPage';
 
 /**
  * AuthGuard - Redirects authenticated users away from auth pages
@@ -65,23 +66,18 @@ function AuthGuard({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* PRE-LAUNCH: Landing Page as Main Entry Point */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/landing" element={<LandingPage />} />
-      
-      {/* Coming Soon Page (not used currently) */}
-      {/* <Route path="/coming-soon" element={<ComingSoonPage />} /> */}
-      
-      {/* PUBLIC LOGIN ROUTES - Available for all users */}
-      <Route path="/admin-login" element={<AuthGuard><LoginPage /></AuthGuard>} />
-      <Route path="/admin-signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
+      {/* Main App - Login as default entry point */}
+      <Route path="/" element={<AuthGuard><LoginPage /></AuthGuard>} />
+      <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
+      <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
       <Route path="/forgot-password" element={<AuthGuard><ForgotPasswordPage /></AuthGuard>} />
       
-      {/* ALL OTHER ROUTES DISABLED FOR PRE-LAUNCH */}
-      {/* WHEN READY TO LAUNCH: Uncomment these routes and change "/" to redirect to /login */}
-      {/* Public Routes - Auth Pages (redirect if authenticated) */}
-      {/* <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
-      <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} /> */}
+      {/* Landing Page - Hidden for now, accessible via direct URL */}
+      <Route path="/landing" element={<LandingPage />} />
+      
+      {/* Legacy admin routes - redirect to main routes */}
+      <Route path="/admin-login" element={<Navigate to="/login" replace />} />
+      <Route path="/admin-signup" element={<Navigate to="/signup" replace />} />
 
       {/* Onboarding Route */}
       <Route
@@ -153,6 +149,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
             <VerificationPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />

@@ -8,6 +8,7 @@ import BasicInfoStep from '../components/onboarding/BasicInfoStep';
 import PreferencesStep from '../components/onboarding/PreferencesStep';
 import InterestsStep from '../components/onboarding/InterestsStep';
 import PhotoUploadStepV2 from '../components/onboarding/PhotoUploadStepV2';
+import VerificationService from '../services/VerificationService';
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -57,6 +58,25 @@ export default function OnboardingPage() {
       // Verify it was saved
       const verifyDoc = await getDoc(doc(db, 'users', currentUser.uid));
       console.log('Verified profile after save:', verifyDoc.data());
+
+      // Automatically submit verification request after onboarding
+      console.log('Creating automatic verification request...');
+      const profilePhotoUrl = onboardingData.photos && onboardingData.photos.length > 0 
+        ? onboardingData.photos[0] 
+        : null;
+      
+      if (profilePhotoUrl) {
+        await VerificationService.submitAutoVerificationRequest(
+          currentUser.uid,
+          profilePhotoUrl,
+          {
+            source: 'onboarding',
+            userName: onboardingData.name,
+            userEmail: currentUser.email
+          }
+        );
+        console.log('Auto verification request created');
+      }
 
       // Force refresh the profile from Firestore to update context
       await refreshUserProfile();

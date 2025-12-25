@@ -9,7 +9,8 @@ import {
   where, 
   orderBy,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  addDoc
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -438,6 +439,59 @@ class VerificationService {
     }
 
     return 'none';
+  }
+
+  /**
+   * Submit automatic verification request after onboarding
+   * @param {string} userId - User ID
+   * @param {string} photoUrl - Profile photo URL
+   * @param {object} metadata - Additional metadata
+   */
+  static async submitAutoVerificationRequest(userId, photoUrl, metadata = {}) {
+    try {
+      // Check if user already has a pending/approved verification
+      const verificationsRef = collection(db, 'verifications');
+      const q = query(
+        verificationsRef,
+        where('userId', '==', userId),
+        where('verificationType', '==', 'auto_profile')
+      );
+      
+      const existingSnapshot = await getDocs(q);
+      const requestCount = existingSnapshot.size;
+      
+      const verificationRef = doc(collection(db, 'verifications'));
+      const verificationData = {
+        userId,
+        verificationType: 'auto_profile',
+        status: this.VERIFICATION_STATUS.PENDING,
+        verificationImageUrl: photoUrl,
+        submittedAt: serverTimestamp(),
+        userName: metadata.userName || 'User',
+        userEmail: metadata.userEmail || '',
+        source: metadata.source || 'onboarding',
+        requestCount: requestCount + 1,
+        isRepeatRequest: requestCount > 0,
+        priority: requestCount > 0 ? 'high' : 'normal',
+        notes: requestCount > 0 
+          ? `⚠️ REPEAT REQUEST (${requestCount + 1}${requestCount === 1 ? 'nd' : requestCount === 2 ? 'rd' : 'th'} time) - Please verify quickly!`
+          : 'Automatic verification request from onboarding'
+      };
+
+      await setDoc(verificationRef, verificationData);
+      
+      // Update user profile
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        'verification.autoProfileRequest': this.VERIFICATION_STATUS.PENDING,
+        'verification.lastRequestAt': serverTimestamp()
+      });
+
+      return { success: true, verificationId: verificationRef.id };
+    } catch (error) {
+      console.error('Error submitting auto verification request:', error);
+      return { success: false, error: error.message };
+    }
   }
 }
 

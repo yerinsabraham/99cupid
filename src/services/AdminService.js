@@ -8,6 +8,7 @@ import {
   deleteDoc,
   getDoc,
   serverTimestamp,
+  addDoc,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -42,13 +43,17 @@ export const AdminService = {
         ...doc.data(),
       }));
 
-      // Sort by creation date (newest first)
+      // Filter out any deleted users from the view (optional, comment this out if you want to see deleted users)
+      // const activeUsers = users.filter(u => u.accountStatus !== 'deleted');
+
+      // Sort by creation date (newest first) with fallback for missing dates
       users.sort((a, b) => {
-        const timeA = new Date(a.createdAt).getTime();
-        const timeB = new Date(b.createdAt).getTime();
+        const timeA = a.createdAt ? (a.createdAt.toDate?.() || new Date(a.createdAt)).getTime() : 0;
+        const timeB = b.createdAt ? (b.createdAt.toDate?.() || new Date(b.createdAt)).getTime() : 0;
         return timeB - timeA;
       });
 
+      console.log(`Admin: Fetched ${users.length} users from Firestore`);
       return { success: true, users };
     } catch (error) {
       console.error('Error getting users:', error);
@@ -249,6 +254,100 @@ export const AdminService = {
       return { success: true };
     } catch (error) {
       console.error('Error unsuspending user:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  /**
+   * Manually verify a user (admin action)
+   */
+  async verifyUser(userId) {
+    try {
+      console.log('=== VERIFY USER START ===');
+      console.log('Verifying user:', userId);
+      
+      // Get user data first
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (!userDoc.exists()) {
+        console.error('User not found:', userId);
+        return { success: false, error: 'User not found' };
+      }
+      
+      const userData = userDoc.data();
+      console.log('User data loaded:', userData);
+      
+      // Update user profile
+      console.log('Updating user profile...');
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        isVerified: true,
+        'verification.isVerified': true,
+        'verification.verifiedAt': serverTimestamp(),
+        'verification.verifiedBy': 'admin',
+        verificationLevel: 'verified',
+        updatedAt: serverTimestamp(),
+      });
+      console.log('User profile updated successfully');
+
+      // Create a verification record for admin's action
+      console.log('Creating verification record...');
+      const verificationsRef = collection(db, 'verifications');
+      const verificationDoc = await addDoc(verificationsRef, {
+        userId: userId,
+        verificationType: 'admin_manual',
+        status: 'approved',
+        submittedAt: serverTimestamp(),
+        reviewedAt: serverTimestamp(),
+        reviewedBy: 'admin',
+        userName: userData.displayName || userData.name || userData.email || 'User',
+        userEmail: userData.email || '',
+        notes: 'Manually verified by admin'
+      });
+      console.log('Verification record created with ID:', verificationDoc.id);
+      console.log('=== VERIFY USER SUCCESS ===');
+
+      return { success: true };
+    } catch (error) {
+      console.error('=== VERIFY USER ERROR ===');
+      console.error('Error verifying user:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      return { success: false, error: error.message };
+    }
+  },
+
+  /**
+   * Remove verification from a user (admin action)
+   */
+  async unverifyUser(userId) {
+    try {
+      // Update user profile
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        isVerified: false,
+        'verification.isVerified': false,
+        verificationLevel: null,
+        updatedAt: serverTimestamp(),
+      });
+
+      // Optionally, update the verification record to show it was revoked
+      const verificationsRef = collection(db, 'verifications');
+      const q = query(verificationsRef, where('userId', '==', userId), where('status', '==', 'approved'));
+      const snapshot = await getDocs(q);
+      
+      // Update all approved verifications for this user to 'revoked'
+      const updatePromises = snapshot.docs.map(verDoc => 
+        updateDoc(doc(db, 'verifications', verDoc.id), {
+          status: 'revoked',
+          revokedAt: serverTimestamp(),
+          revokedBy: 'admin'
+        })
+      );
+      await Promise.all(updatePromises);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error removing verification:', error);
       return { success: false, error: error.message };
     }
   },

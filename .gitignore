@@ -27,8 +27,8 @@ lerna-debug.log*
 .DS_Store
 
 # Firebase
-.firebaserc
 firebase-debug.log
+# Note: .firebaserc is now tracked (contains project ID only, not sensitive)
 
 # OS
 Thumbs.db

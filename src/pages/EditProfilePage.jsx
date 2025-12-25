@@ -5,6 +5,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import { useAuth } from '../hooks/useAuth';
 import AppLayout from '../components/layout/AppLayout';
+import ProfileCompletion from '../components/common/ProfileCompletion';
 import { ArrowLeft, Camera, X, Plus, Save, Loader } from 'lucide-react';
 
 export default function EditProfilePage() {
@@ -16,7 +17,7 @@ export default function EditProfilePage() {
 
   // Form state
   const [formData, setFormData] = useState({
-    displayName: '',
+    name: '',
     bio: '',
     age: '',
     gender: '',
@@ -55,7 +56,7 @@ export default function EditProfilePage() {
         setProfile(data);
         
         setFormData({
-          displayName: data.displayName || '',
+          name: data.name || data.displayName || '',
           bio: data.bio || '',
           age: data.age?.toString() || '',
           gender: data.gender || '',
@@ -126,7 +127,17 @@ export default function EditProfilePage() {
 
       // Update Firestore
       await updateDoc(doc(db, 'users', currentUser.uid), {
-        ...formData,
+        name: formData.name,
+        displayName: formData.name, // Keep for compatibility
+        bio: formData.bio,
+        age: parseInt(formData.age) || null,
+        gender: formData.gender,
+        location: formData.location,
+        occupation: formData.occupation,
+        education: formData.education,
+        interests: formData.interests,
+        lookingFor: formData.lookingFor,
+        relationshipGoals: formData.relationshipGoals,
         photos: allPhotos,
         updatedAt: new Date(),
       });
@@ -158,13 +169,13 @@ export default function EditProfilePage() {
     );
   }
 
-  if (!user) {
+  if (!currentUser) {
     return (
       <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-screen">
           <p className="text-gray-600 mb-4">Please log in to edit your profile</p>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/admin-login')}
             className="px-6 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
           >
             Go to Login
@@ -208,6 +219,9 @@ export default function EditProfilePage() {
         </div>
 
         <div className="max-w-2xl mx-auto p-4 space-y-6">
+          {/* Profile Completion - Always show */}
+          <ProfileCompletion profile={profile} showAlways={true} />
+
           {/* Photos Section */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Photos</h2>
@@ -273,8 +287,8 @@ export default function EditProfilePage() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
               <input
                 type="text"
-                value={formData.displayName}
-                onChange={(e) => handleInputChange('displayName', e.target.value)}
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               />
             </div>
@@ -393,8 +407,8 @@ export default function EditProfilePage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               >
                 <option value="">Select</option>
-                <option value="men">Men</option>
-                <option value="women">Women</option>
+                <option value="male">Men</option>
+                <option value="female">Women</option>
                 <option value="everyone">Everyone</option>
               </select>
             </div>

@@ -20,15 +20,16 @@ class MatchingService {
    * Get personalized matches for a user
    * @param {string} userId - Current user's ID
    * @param {number} limitCount - Number of profiles to return
+   * @param {object} filters - Optional filters (location, ageMin, ageMax, gender, maxDistance)
    * @returns {Promise<Array>} - Sorted array of matched profiles with scores
    */
-  static async getMatches(userId, limitCount = 50) {
+  static async getMatches(userId, limitCount = 50, filters = {}) {
     try {
       const userProfile = await this.getUserProfile(userId);
       if (!userProfile) return [];
 
       // Get potential matches based on basic filters
-      const potentialMatches = await this.getPotentialMatches(userProfile);
+      const potentialMatches = await this.getPotentialMatches(userProfile, filters);
 
       // Score each profile
       const scoredMatches = potentialMatches.map(profile => ({
@@ -63,8 +64,10 @@ class MatchingService {
 
   /**
    * Get potential matches based on basic preferences
+   * @param {object} userProfile - User's profile
+   * @param {object} filters - Optional filters (location, ageMin, ageMax, gender, maxDistance)
    */
-  static async getPotentialMatches(userProfile) {
+  static async getPotentialMatches(userProfile, filters = {}) {
     try {
       const usersRef = collection(db, 'users');
       let q = query(
@@ -82,7 +85,10 @@ class MatchingService {
         if (profile.id !== userProfile.id) {
           // Apply basic filters
           if (this.meetsBasicPreferences(userProfile, profile)) {
-            profiles.push(profile);
+            // Apply additional user-specified filters
+            if (this.meetsUserFilters(profile, filters)) {
+              profiles.push(profile);
+            }
           }
         }
       });
@@ -110,6 +116,79 @@ class MatchingService {
     const maxAge = userProfile.agePreferenceMax || 99;
     
     if (candidateAge < minAge || candidateAge > maxAge) return false;
+
+    return true;
+  }
+
+  /**
+   * Check if profile meets user-specified filters
+   * @param {object} profile - Candidate profile
+   * @param {object} filters - User filters (location, ageMin, ageMax, gender, maxDistance)
+   */
+  static meetsUserFilters(profile, filters) {
+    if (!filters || Object.keys(filters).length === 0) return true;
+
+    // Location filter
+    if (filters.location && filters.location.trim() !== '') {
+      const profileLocation = (profile.location || '').toLowerCase();
+      const filterLocation = filters.location.toLowerCase();
+      
+      // Apply distance filter
+      if (filters.maxDistance === 'same-city') {
+        // Exact match or contains
+        if (!profileLocation.includes(filterLocation) && !filterLocation.includes(profileLocation)) {
+          return false;
+        }
+      } else if (filters.maxDistance === 'same-region') {
+        // Check if any part of location matches
+        const profileParts = profileLocation.split(',').map(s => s.trim());
+        const filterParts = filterLocation.split(',').map(s => s.trim());
+        
+        let hasMatch = false;
+        for (const filterPart of filterParts) {
+          for (const profilePart of profileParts) {
+            if (profilePart.includes(filterPart) || filterPart.includes(profilePart)) {
+              hasMatch = true;
+              break;
+            }
+          }
+          if (hasMatch) break;
+        }
+        
+        if (!hasMatch) return false;
+      } else if (filters.maxDistance === 'nearby') {
+        // Similar to same-region but more lenient
+        const profileParts = profileLocation.split(',').map(s => s.trim());
+        const filterParts = filterLocation.split(',').map(s => s.trim());
+        
+        let hasMatch = false;
+        for (const filterPart of filterParts) {
+          for (const profilePart of profileParts) {
+            if (profilePart.includes(filterPart) || filterPart.includes(profilePart)) {
+              hasMatch = true;
+              break;
+            }
+          }
+          if (hasMatch) break;
+        }
+        
+        if (!hasMatch && !profileLocation.includes(filterLocation)) return false;
+      }
+      // 'any' distance - no location filtering needed
+    }
+
+    // Age filter
+    const candidateAge = profile.age || this.calculateAge(profile.dateOfBirth);
+    if (candidateAge) {
+      if (filters.ageMin && candidateAge < filters.ageMin) return false;
+      if (filters.ageMax && candidateAge > filters.ageMax) return false;
+    }
+
+    // Gender filter
+    if (filters.gender && filters.gender !== 'everyone') {
+      if (filters.gender === 'men' && profile.gender !== 'male') return false;
+      if (filters.gender === 'women' && profile.gender !== 'female') return false;
+    }
 
     return true;
   }
