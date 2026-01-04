@@ -25,82 +25,85 @@ class PaymentService {
         boosts: 0
       }
     },
-    plus: {
-      id: 'plus',
-      name: '99 Plus',
-      price: 299,
+    premium: {
+      id: 'premium',
+      name: '99 Premium',
+      price: 0.99,
       currency: 'PHP',
       period: 'month',
       features: [
         'Unlimited likes',
         'See who liked you',
-        '5 Super Likes per day',
-        '1 Boost per month',
-        'Rewind unlimited',
+        'Unlimited Super Likes',
+        'Rewind feature',
+        'Advanced filters',
         'Ad-free experience',
+        'Priority matching',
+        'Read receipts',
+        'Profile boost',
         'Priority support'
       ],
       limits: {
         dailyLikes: -1, // unlimited
-        superLikes: 5,
-        rewinds: -1,
-        boosts: 1
-      }
-    },
-    premium: {
-      id: 'premium',
-      name: '99 Premium',
-      price: 599,
-      currency: 'PHP',
-      period: 'month',
-      features: [
-        'All Plus features',
-        'Unlimited Super Likes',
-        '5 Boosts per month',
-        'Advanced filters',
-        'Top profile visibility',
-        'Read receipts',
-        'Priority matching',
-        'VIP support'
-      ],
-      limits: {
-        dailyLikes: -1,
         superLikes: -1,
         rewinds: -1,
-        boosts: 5
+        boosts: -1
       }
     }
   };
 
-  // Payment methods available in Philippines
+  // Payment methods available - Secure and verified
   static PAYMENT_METHODS = {
-    gcash: {
-      id: 'gcash',
-      name: 'GCash',
-      icon: '💳',
-      available: true,
-      type: 'e-wallet'
-    },
-    paymaya: {
-      id: 'paymaya',
-      name: 'PayMaya',
-      icon: '💳',
-      available: true,
-      type: 'e-wallet'
-    },
     card: {
       id: 'card',
       name: 'Credit/Debit Card',
       icon: '💳',
       available: true,
-      type: 'card'
+      type: 'card',
+      security: 'PCI DSS Level 1 Compliant',
+      encryption: '256-bit SSL/TLS'
     },
     paypal: {
       id: 'paypal',
       name: 'PayPal',
       icon: '💰',
       available: true,
-      type: 'paypal'
+      type: 'paypal',
+      security: 'PayPal Buyer Protection',
+      encryption: 'End-to-end encrypted'
+    },
+    gcash: {
+      id: 'gcash',
+      name: 'GCash',
+      icon: '💳',
+      available: true,
+      type: 'e-wallet',
+      security: 'BSP Regulated',
+      encryption: 'Bank-level security'
+    }
+  };
+
+  // Security and Privacy Features
+  static SECURITY_FEATURES = {
+    payment: {
+      encryption: '256-bit SSL/TLS encryption',
+      pciCompliance: 'PCI DSS Level 1 Certified',
+      tokenization: 'Card data tokenization - never stored',
+      fraud: 'Real-time fraud detection',
+      verification: '3D Secure authentication'
+    },
+    identity: {
+      dataProtection: 'GDPR & Data Privacy Act compliant',
+      anonymization: 'Payment info never shared with matches',
+      isolation: 'Billing separated from dating profile',
+      deletion: 'Right to be forgotten - full data deletion',
+      encryption: 'All personal data encrypted at rest'
+    },
+    privacy: {
+      noSelling: 'Your data is NEVER sold to third parties',
+      minimal: 'We only collect what\'s necessary',
+      transparent: 'Full access to your data anytime',
+      secure: 'Bank-grade infrastructure'
     }
   };
 

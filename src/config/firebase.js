@@ -44,8 +44,8 @@ export const storage = getStorage(app);
 // Initialize Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ 
-  prompt: 'select_account',
-  display: 'popup'
+  prompt: 'select_account'
+  // Removed 'display: popup' to let Firebase choose the best method
 });
 
 // Enable offline persistence for Firestore

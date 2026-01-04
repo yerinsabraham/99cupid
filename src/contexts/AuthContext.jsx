@@ -8,6 +8,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   updateEmail
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
@@ -72,36 +74,56 @@ export function AuthProvider({ children }) {
 
   /**
    * Login with Google
+   * Uses popup on desktop and redirect on mobile for better compatibility
    */
   const signInWithGoogle = useCallback(async () => {
     try {
       setError(null);
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      // Check if user exists in Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
       
-      if (!userDoc.exists()) {
-        // Create new user profile in Firestore for Google signups
-        const newUser = new UserModel({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || 'User',
-          photoURL: user.photoURL || null,
-          isVerifiedAccount: user.emailVerified || true,
-          profileSetupComplete: false,
-        });
-
-        await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
-        
-        // Set the profile state for new users
-        setUserProfile({ id: user.uid, ...newUser.toFirestore() });
+      // Detect if mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      let result;
+      if (isMobile) {
+        // Use redirect flow for mobile (more reliable)
+        console.log('Using redirect flow for mobile device');
+        await signInWithRedirect(auth, googleProvider);
+        // Note: The redirect will happen, and we'll handle the result in the useEffect below
+        return { success: true, redirecting: true };
       } else {
-        // Load existing user profile into state
-        const profileData = { id: userDoc.id, ...userDoc.data() };
-        setUserProfile(profileData);
-        console.log('Google sign-in - Loaded existing profile:', profileData);
+        // Use popup flow for desktop
+        console.log('Using popup flow for desktop');
+        result = await signInWithPopup(auth, googleProvider);
+      }
+      
+      // For popup flow, handle the user immediately
+      if (result && result.user) {
+        const user = result.user;
+
+        // Check if user exists in Firestore
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        
+        if (!userDoc.exists()) {
+          // Create new user profile in Firestore for Google signups
+          const newUser = new UserModel({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || 'User',
+            photoURL: user.photoURL || null,
+            isVerifiedAccount: user.emailVerified || true,
+            profileSetupComplete: false,
+          });
+
+          await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
+          
+          // Set the profile state for new users
+          setUserProfile({ id: user.uid, ...newUser.toFirestore() });
+        } else {
+          // Load existing user profile into state
+          const profileData = { id: userDoc.id, ...userDoc.data() };
+          setUserProfile(profileData);
+          console.log('Google sign-in - Loaded existing profile:', profileData);
+        }
       }
 
       return { success: true };
@@ -310,6 +332,52 @@ export function AuthProvider({ children }) {
     });
 
     return unsubscribe;
+  }, []);
+
+  /**
+   * Handle Google redirect result (for mobile flow)
+   */
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          console.log('Processing Google redirect result for user:', result.user.uid);
+          const user = result.user;
+
+          // Check if user exists in Firestore
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          
+          if (!userDoc.exists()) {
+            // Create new user profile in Firestore for Google signups
+            const newUser = new UserModel({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || 'User',
+              photoURL: user.photoURL || null,
+              isVerifiedAccount: user.emailVerified || true,
+              profileSetupComplete: false,
+            });
+
+            await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
+            setUserProfile({ id: user.uid, ...newUser.toFirestore() });
+            console.log('Created new user profile from Google redirect');
+          } else {
+            // Load existing user profile
+            const profileData = { id: userDoc.id, ...userDoc.data() };
+            setUserProfile(profileData);
+            console.log('Loaded existing profile from Google redirect');
+          }
+        }
+      } catch (error) {
+        if (error.code !== 'auth/popup-closed-by-user') {
+          console.error('Error handling redirect result:', error);
+          handleAuthError(error);
+        }
+      }
+    };
+
+    handleRedirectResult();
   }, []);
 
   const value = {
