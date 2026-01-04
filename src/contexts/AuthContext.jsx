@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -10,11 +10,14 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  updateEmail
+  updateEmail,
+  browserLocalPersistence,
+  setPersistence
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../config/firebase';
 import { UserModel } from '../models/UserModel';
+import { addDebugLog } from '../components/common/MobileDebug';
 
 export const AuthContext = createContext();
 
@@ -23,6 +26,45 @@ export function AuthProvider({ children }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+  
+  // Track if we're processing a redirect to prevent double processing
+  const processingRedirect = useRef(false);
+  const profileLoaded = useRef(false);
+
+  /**
+   * Load or create user profile in Firestore
+   */
+  const loadOrCreateProfile = async (user) => {
+    try {
+      addDebugLog(`Loading profile for: ${user.email}`, 'info');
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (userDoc.exists()) {
+        const profileData = { id: userDoc.id, ...userDoc.data() };
+        addDebugLog(`Profile loaded! Setup complete: ${profileData.profileSetupComplete}`, 'success');
+        return profileData;
+      } else {
+        addDebugLog('No profile found, creating new one...', 'info');
+        const newUser = new UserModel({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || 'User',
+          photoURL: user.photoURL || null,
+          isVerifiedAccount: user.emailVerified || true,
+          profileSetupComplete: false,
+        });
+        
+        await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
+        const newProfile = { id: user.uid, ...newUser.toFirestore() };
+        addDebugLog('New profile created successfully', 'success');
+        return newProfile;
+      }
+    } catch (err) {
+      addDebugLog(`Profile error: ${err.message}`, 'error');
+      throw err;
+    }
+  };
 
   /**
    * Sign up new user with email and password
@@ -30,6 +72,10 @@ export function AuthProvider({ children }) {
   const signUp = useCallback(async (email, password, displayName) => {
     try {
       setError(null);
+      
+      // Ensure persistence is set to local
+      await setPersistence(auth, browserLocalPersistence);
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
@@ -61,73 +107,92 @@ export function AuthProvider({ children }) {
 
   /**
    * Login user with email and password
+   * Works on both mobile and desktop
    */
   const login = useCallback(async (email, password) => {
     try {
       setError(null);
-      await signInWithEmailAndPassword(auth, email, password);
+      addDebugLog('Starting email/password login...', 'info');
+      
+      // Ensure persistence is set to local (survives page refreshes)
+      await setPersistence(auth, browserLocalPersistence);
+      addDebugLog('Persistence set to local', 'info');
+      
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      addDebugLog(`Login successful: ${result.user.email}`, 'success');
+      
+      // Profile will be loaded by onAuthStateChanged
       return { success: true };
     } catch (error) {
+      addDebugLog(`Login failed: ${error.code} - ${error.message}`, 'error');
       return handleAuthError(error);
     }
   }, []);
 
   /**
    * Login with Google
-   * Uses popup on desktop and redirect on mobile for better compatibility
+   * Uses redirect flow with a workaround for mobile browsers
    */
   const signInWithGoogle = useCallback(async () => {
     try {
       setError(null);
       
-      // Detect if mobile device
+      // Detect mobile device
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
       
-      let result;
+      addDebugLog(`Google Sign-In starting... Mobile: ${isMobile}, iOS: ${isIOS}, Safari: ${isSafari}`, 'info');
+      
+      // Ensure persistence is set to local
+      await setPersistence(auth, browserLocalPersistence);
+      addDebugLog('Persistence set to local', 'info');
+      
+      // Try popup flow first on mobile (redirect is broken on Safari)
       if (isMobile) {
-        // Use redirect flow for mobile (more reliable)
-        console.log('Using redirect flow for mobile device');
-        await signInWithRedirect(auth, googleProvider);
-        // Note: The redirect will happen, and we'll handle the result in the useEffect below
-        return { success: true, redirecting: true };
-      } else {
-        // Use popup flow for desktop
-        console.log('Using popup flow for desktop');
-        result = await signInWithPopup(auth, googleProvider);
-      }
-      
-      // For popup flow, handle the user immediately
-      if (result && result.user) {
-        const user = result.user;
-
-        // Check if user exists in Firestore
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        addDebugLog('Attempting POPUP flow for mobile (redirect broken on Safari)...', 'info');
         
-        if (!userDoc.exists()) {
-          // Create new user profile in Firestore for Google signups
-          const newUser = new UserModel({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || 'User',
-            photoURL: user.photoURL || null,
-            isVerifiedAccount: user.emailVerified || true,
-            profileSetupComplete: false,
-          });
-
-          await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
+        try {
+          const result = await signInWithPopup(auth, googleProvider);
           
-          // Set the profile state for new users
-          setUserProfile({ id: user.uid, ...newUser.toFirestore() });
-        } else {
-          // Load existing user profile into state
-          const profileData = { id: userDoc.id, ...userDoc.data() };
-          setUserProfile(profileData);
-          console.log('Google sign-in - Loaded existing profile:', profileData);
+          if (result && result.user) {
+            addDebugLog(`Google popup success: ${result.user.email}`, 'success');
+            return { success: true };
+          }
+        } catch (popupError) {
+          addDebugLog(`Popup error: ${popupError.code} - ${popupError.message}`, 'error');
+          
+          // If popup is blocked or closed, try redirect as fallback
+          if (popupError.code === 'auth/popup-blocked' || 
+              popupError.code === 'auth/popup-closed-by-user' ||
+              popupError.code === 'auth/cancelled-popup-request') {
+            addDebugLog('Popup failed, falling back to REDIRECT...', 'warning');
+            
+            // Store pending state in localStorage (more reliable than sessionStorage on iOS)
+            localStorage.setItem('googleSignInPending', Date.now().toString());
+            
+            addDebugLog('Redirecting to Google...', 'info');
+            await signInWithRedirect(auth, googleProvider);
+            return { success: true, redirecting: true };
+          } else {
+            // Other errors (network, auth, etc) - don't retry with redirect
+            throw popupError;
+          }
         }
+      } else {
+        addDebugLog('Using POPUP flow for desktop', 'info');
+        
+        const result = await signInWithPopup(auth, googleProvider);
+        
+        if (result && result.user) {
+          addDebugLog(`Google popup success: ${result.user.email}`, 'success');
+        }
+        
+        return { success: true };
       }
-
-      return { success: true };
     } catch (error) {
+      addDebugLog(`Google Sign-In error: ${error.code} - ${error.message}`, 'error');
+      localStorage.removeItem('googleSignInPending');
       return handleAuthError(error);
     }
   }, []);
@@ -138,10 +203,17 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       setError(null);
+      profileLoaded.current = false;
       await signOut(auth);
       setUserProfile(null);
+      setCurrentUser(null);
+      // Clear any stored data
+      localStorage.removeItem('googleSignInPending');
+      sessionStorage.removeItem('googleSignInPending');
+      addDebugLog('User logged out', 'info');
       return { success: true };
     } catch (error) {
+      addDebugLog(`Logout error: ${error.message}`, 'error');
       return { success: false, message: error.message };
     }
   }, []);
@@ -199,7 +271,7 @@ export function AuthProvider({ children }) {
 
       await updateDoc(userRef, updateData);
 
-      // Refresh profile from Firestore to ensure we have latest data
+      // Refresh profile from Firestore
       const updatedDoc = await getDoc(userRef);
       if (updatedDoc.exists()) {
         const freshProfile = { id: updatedDoc.id, ...updatedDoc.data() };
@@ -254,6 +326,9 @@ export function AuthProvider({ children }) {
       case 'auth/wrong-password':
         message = 'Incorrect password.';
         break;
+      case 'auth/invalid-credential':
+        message = 'Invalid email or password.';
+        break;
       case 'auth/too-many-requests':
         message = 'Too many attempts. Please try again later.';
         break;
@@ -264,120 +339,120 @@ export function AuthProvider({ children }) {
         message = 'Password is too weak. Use at least 8 characters.';
         break;
       case 'auth/operation-not-allowed':
-        message = 'This sign-in method is not enabled. Please enable Email/Password and Google authentication in Firebase Console.';
-        break;
-      case 'auth/configuration-not-found':
-        message = 'Firebase authentication is not properly configured. Please check your Firebase Console settings.';
+        message = 'This sign-in method is not enabled.';
         break;
       case 'auth/popup-closed-by-user':
-        message = 'Sign-in popup was closed. Please try again.';
+        message = 'Sign-in was cancelled.';
         break;
       case 'auth/cancelled-popup-request':
-        message = 'Sign-in was cancelled. Please try again.';
+        message = 'Sign-in was cancelled.';
         break;
       case 'auth/popup-blocked':
-        message = 'Sign-in popup was blocked. Please allow popups for this site.';
+        message = 'Popup was blocked. Please allow popups for this site.';
         break;
       case 'auth/unauthorized-domain':
-        message = 'This domain is not authorized. Please add it to Firebase Console > Authentication > Settings > Authorized domains.';
-        break;
-      case 'auth/invalid-api-key':
-        message = 'Invalid Firebase API key. Please check your .env file configuration.';
+        message = 'This domain is not authorized for sign-in.';
         break;
       default:
         message = error.message || message;
     }
 
-    console.error('Authentication error:', error.code, error.message);
+    console.error('🚨 Auth error:', error.code, message);
     setError(message);
     return { success: false, message };
   };
 
   /**
-   * Listen to auth state changes
+   * STEP 1: Handle Google redirect result
+   * Check both getRedirectResult AND onAuthStateChanged
    */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      try {
-        setCurrentUser(user);
-
-        if (user) {
-          // Keep loading true while fetching profile
-          setLoading(true);
+    const handleGoogleRedirect = async () => {
+      const pendingSignIn = localStorage.getItem('googleSignInPending');
+      addDebugLog(`Page loaded. Pending sign-in: ${pendingSignIn ? 'YES' : 'NO'}`, 'info');
+      
+      if (pendingSignIn) {
+        addDebugLog('Checking for Google redirect result...', 'info');
+        
+        try {
+          const result = await getRedirectResult(auth);
           
-          // Fetch user profile from Firestore
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            // Use raw data directly instead of UserModel to preserve all fields
-            const profileData = { id: userDoc.id, ...userDoc.data() };
-            setUserProfile(profileData);
-            console.log('Loaded user profile:', profileData);
+          if (result && result.user) {
+            addDebugLog(`Redirect SUCCESS: ${result.user.email}`, 'success');
+            localStorage.removeItem('googleSignInPending');
+            
+            // Profile will be loaded by auth state listener
+            return;
           } else {
-            // Create user profile if it doesn't exist
-            const newUser = UserModel.fromAuthUser(user);
-            await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
-            setUserProfile({ id: user.uid, ...newUser.toFirestore() });
+            addDebugLog('getRedirectResult returned null', 'warning');
+            
+            // Wait a moment for auth state to settle
+            addDebugLog('Waiting for auth state...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Check if user was authenticated anyway (Safari workaround)
+            if (auth.currentUser) {
+              addDebugLog(`Auth restored! User: ${auth.currentUser.email}`, 'success');
+              localStorage.removeItem('googleSignInPending');
+            } else {
+              addDebugLog('No user found after redirect. Sign-in may have failed.', 'error');
+              localStorage.removeItem('googleSignInPending');
+              setError('Google sign-in did not complete. Please try again.');
+            }
           }
-          
-          // Now we can set loading to false
-          setLoading(false);
-        } else {
-          setUserProfile(null);
-          setLoading(false);
+        } catch (error) {
+          addDebugLog(`Redirect ERROR: ${error.code} - ${error.message}`, 'error');
+          localStorage.removeItem('googleSignInPending');
+          setError(`Google sign-in failed: ${error.message}`);
         }
-      } catch (err) {
-        console.error('Error in auth state listener:', err);
-        setLoading(false);
       }
-    });
+      
+      setAuthInitialized(true);
+    };
 
-    return unsubscribe;
+    handleGoogleRedirect();
   }, []);
 
   /**
-   * Handle Google redirect result (for mobile flow)
+   * STEP 2: Listen to auth state changes
+   * This handles email/password login and maintaining session
    */
   useEffect(() => {
-    const handleRedirectResult = async () => {
+    addDebugLog('Setting up auth state listener...', 'info');
+    
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      addDebugLog(`Auth state changed: ${user ? user.email : 'No user'}`, user ? 'success' : 'info');
+      
       try {
-        const result = await getRedirectResult(auth);
-        if (result && result.user) {
-          console.log('Processing Google redirect result for user:', result.user.uid);
-          const user = result.user;
-
-          // Check if user exists in Firestore
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (user) {
+          setCurrentUser(user);
           
-          if (!userDoc.exists()) {
-            // Create new user profile in Firestore for Google signups
-            const newUser = new UserModel({
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName || 'User',
-              photoURL: user.photoURL || null,
-              isVerifiedAccount: user.emailVerified || true,
-              profileSetupComplete: false,
-            });
-
-            await setDoc(doc(db, 'users', user.uid), newUser.toFirestore());
-            setUserProfile({ id: user.uid, ...newUser.toFirestore() });
-            console.log('Created new user profile from Google redirect');
+          // Only load profile if not already loaded
+          if (!profileLoaded.current) {
+            addDebugLog('Loading profile...', 'info');
+            setLoading(true);
+            const profile = await loadOrCreateProfile(user);
+            setUserProfile(profile);
+            profileLoaded.current = true;
+            addDebugLog(`Profile loaded! Setup complete: ${profile.profileSetupComplete}`, 'success');
           } else {
-            // Load existing user profile
-            const profileData = { id: userDoc.id, ...userDoc.data() };
-            setUserProfile(profileData);
-            console.log('Loaded existing profile from Google redirect');
+            addDebugLog('Profile already loaded, skipping', 'info');
           }
+        } else {
+          addDebugLog('No user - clearing state', 'info');
+          setCurrentUser(null);
+          setUserProfile(null);
+          profileLoaded.current = false;
         }
-      } catch (error) {
-        if (error.code !== 'auth/popup-closed-by-user') {
-          console.error('Error handling redirect result:', error);
-          handleAuthError(error);
-        }
+      } catch (err) {
+        addDebugLog(`Auth state error: ${err.message}`, 'error');
+      } finally {
+        setLoading(false);
+        setAuthInitialized(true);
       }
-    };
+    });
 
-    handleRedirectResult();
+    return () => unsubscribe();
   }, []);
 
   const value = {
@@ -385,6 +460,7 @@ export function AuthProvider({ children }) {
     userProfile,
     loading,
     error,
+    authInitialized,
     signUp,
     login,
     logout,

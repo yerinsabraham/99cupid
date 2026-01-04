@@ -30,9 +30,10 @@ import SettingsPage from './pages/SettingsPage';
  * AuthGuard - Redirects authenticated users away from auth pages
  */
 function AuthGuard({ children }) {
-  const { currentUser, userProfile, loading } = useAuth();
+  const { currentUser, userProfile, loading, authInitialized } = useAuth();
 
-  if (loading) {
+  // Wait for auth to be fully initialized
+  if (loading || !authInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
         <HeartLoader text="Loading..." size="large" />
@@ -42,18 +43,33 @@ function AuthGuard({ children }) {
 
   if (currentUser) {
     // Debug log to see what we have
-    console.log('AuthGuard - userProfile:', userProfile);
-    console.log('AuthGuard - profileSetupComplete:', userProfile?.profileSetupComplete);
+    console.log('🔍 AuthGuard Check:', {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      hasUserProfile: !!userProfile,
+      profileSetupComplete: userProfile?.profileSetupComplete,
+      isAdmin: userProfile?.isAdmin
+    });
+    
+    // Wait for profile to load before deciding
+    if (!userProfile) {
+      console.log('⏳ AuthGuard - Waiting for profile to load');
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+          <HeartLoader text="Loading profile..." size="large" />
+        </div>
+      );
+    }
     
     // Check if profile setup is complete (explicit check for true/false)
     const isProfileComplete = userProfile?.profileSetupComplete === true;
     
     if (!isProfileComplete) {
-      console.log('AuthGuard - Redirecting to onboarding');
+      console.log('➡️ AuthGuard - Profile incomplete, redirecting to onboarding');
       return <Navigate to="/onboarding" replace />;
     }
     
-    console.log('AuthGuard - Redirecting to home');
+    console.log('➡️ AuthGuard - Profile complete, redirecting to home');
     return <Navigate to="/home" replace />;
   }
 

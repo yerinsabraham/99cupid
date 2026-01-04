@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { validateEmail } from '../../utils/validation';
 import googleLogo from '/assets/icons/google.png';
@@ -10,10 +10,20 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const { login, signInWithGoogle } = useAuth();
+  const { login, signInWithGoogle, error: authError } = useAuth();
   const navigate = useNavigate();
+
+  // Show auth errors from context
+  useEffect(() => {
+    if (authError) {
+      setMessage({ type: 'error', text: authError });
+      setLoading(false);
+      setGoogleLoading(false);
+    }
+  }, [authError]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,27 +52,47 @@ export default function LoginForm() {
     if (!validateForm()) return;
 
     setLoading(true);
+    console.log('📧 Attempting email/password login...');
+    
     const result = await login(formData.email, formData.password);
-    setLoading(false);
-
+    
     if (!result.success) {
       setMessage({ type: 'error', text: result.message });
+      setLoading(false);
     }
+    // If successful, auth state listener will handle navigation
   };
 
   const handleGoogleSignIn = async () => {
     setMessage({ type: '', text: '' });
-    setLoading(true);
-    const result = await signInWithGoogle();
-    setLoading(false);
-
-    if (!result.success) {
-      setMessage({ type: 'error', text: result.message });
+    setGoogleLoading(true);
+    console.log('🔵 Attempting Google sign-in...');
+    
+    try {
+      const result = await signInWithGoogle();
+      
+      if (!result.success && !result.redirecting) {
+        setMessage({ type: 'error', text: result.message });
+        setGoogleLoading(false);
+      }
+      // For redirect flow, page will reload
+      // For popup flow, auth state listener will handle navigation
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      setMessage({ type: 'error', text: 'Google sign-in failed. Please try again.' });
+      setGoogleLoading(false);
     }
   };
 
   return (
     <div className="w-full max-w-md mx-auto">
+      {/* Show any errors from auth context */}
+      {authError && (
+        <div className="mb-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200">
+          {authError}
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email */}
         <div>
@@ -156,11 +186,20 @@ export default function LoginForm() {
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          disabled={loading}
+          disabled={loading || googleLoading}
           className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <img src={googleLogo} alt="Google" className="w-5 h-5" />
-          Sign in with Google
+          {googleLoading ? (
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              <span>Signing in...</span>
+            </>
+          ) : (
+            <>
+              <img src={googleLogo} alt="Google" className="w-5 h-5" />
+              <span>Sign in with Google</span>
+            </>
+          )}
         </button>
 
         {/* Sign Up Link */}
