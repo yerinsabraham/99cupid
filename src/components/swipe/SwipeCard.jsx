@@ -99,7 +99,7 @@ export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled
         {/* Profile Image */}
         <div className="relative h-2/3">
           <img
-            src={user.photoURL}
+            src={user.photoURL || (user.photos && user.photos[0]) || '/default-avatar.png'}
             alt={user.displayName}
             className="w-full h-full object-cover"
             draggable="false"
@@ -165,7 +165,13 @@ export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled
             </h2>
             <div className="flex items-center space-x-2 text-sm">
               <MapPin className="w-4 h-4" />
-              <span>{user.location}</span>
+              <span>
+                {typeof user.location === 'string' 
+                  ? user.location 
+                  : user.location?.city && user.location?.country
+                    ? `${user.location.city}, ${user.location.country}`
+                    : 'Location not set'}
+              </span>
             </div>
           </div>
         </div>

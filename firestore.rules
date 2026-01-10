@@ -37,16 +37,18 @@ service cloud.firestore {
       // List/query access (needed for matching algorithm and admin dashboard)
       allow list: if isAuthenticated();
       
-      // Only allow users to create their own profile
-      allow create: if isAuthenticated() && isOwner(userId);
+      // TEMPORARY: Allow updating demo users to add photoURL
+      allow create: if (isAuthenticated() && isOwner(userId)) || 
+                       (userId.matches('demo_user_.*'));
       
-      // Allow users to update their own profile OR admins can update any profile
-      // Allow soft delete (accountStatus='deleted') for own account
       allow update: if isAuthenticated() && (
         isOwner(userId) || 
         isAdmin() ||
-        (isOwner(userId) && request.resource.data.accountStatus == 'deleted')
+        (isOwner(userId) && request.resource.data.accountStatus == 'deleted') ||
+        (userId.matches('demo_user_.*') && request.resource.data.isDemoUser == true)
       );
+      
+      allow delete: if userId.matches('demo_user_.*');
       
       // Hard delete only via admin OR user can delete own account
       allow delete: if isAuthenticated() && (isAdmin() || isOwner(userId));

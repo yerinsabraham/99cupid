@@ -236,9 +236,21 @@ class MatchingService {
     // If no location data, return neutral score
     if (!userProfile.location || !candidateProfile.location) return 50;
 
-    // Simple city/province matching for now
-    const userLocation = userProfile.location.toLowerCase();
-    const candidateLocation = candidateProfile.location.toLowerCase();
+    // Handle location as object (for demo users) or string (for real users)
+    const getUserLocation = (profile) => {
+      if (typeof profile.location === 'string') {
+        return profile.location.toLowerCase();
+      } else if (typeof profile.location === 'object') {
+        // For demo profiles: location = { city, country, ... }
+        return `${profile.location.city || ''}, ${profile.location.country || ''}`.toLowerCase();
+      }
+      return '';
+    };
+
+    const userLocation = getUserLocation(userProfile);
+    const candidateLocation = getUserLocation(candidateProfile);
+
+    if (!userLocation || !candidateLocation) return 50;
 
     // Exact match
     if (userLocation === candidateLocation) return 100;
