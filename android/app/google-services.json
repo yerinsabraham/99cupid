@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "302226954210",
+    "project_id": "cupid-e5874",
+    "storage_bucket": "cupid-e5874.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302226954210:android:e54c45e1128be278b40bbb",
+        "android_client_info": {
+          "package_name": "com.cupid99.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "302226954210-7tid7scm7q0duh4pdkj2094o8f8esmn7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZMqHFNpL1eCt_1IT2EJU918Valcngocc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "302226954210-7tid7scm7q0duh4pdkj2094o8f8esmn7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "302226954210-4homg2svq8388bb8ig025mo0cm3ihai4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cupid99.cupid99"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302226954210:android:5e8066a155c4ae7cb40bbb",
+        "android_client_info": {
+          "package_name": "com.cupid99.cupid_99"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "302226954210-7tid7scm7q0duh4pdkj2094o8f8esmn7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZMqHFNpL1eCt_1IT2EJU918Valcngocc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "302226954210-7tid7scm7q0duh4pdkj2094o8f8esmn7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "302226954210-4homg2svq8388bb8ig025mo0cm3ihai4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cupid99.cupid99"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
