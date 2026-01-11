@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_assets.dart';
+import '../../../core/constants/firebase_collections.dart';
 import '../../providers/auth_provider.dart';
 
 /// Splash Screen - Initial loading screen with logo
@@ -31,7 +33,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     
     // Navigate based on auth state
     if (authState.hasValue && authState.value != null) {
-      context.go('/home');
+      final user = authState.value!;
+      
+      // Fetch user profile directly from Firestore to check profileSetupComplete
+      try {
+        final userDoc = await FirebaseFirestore.instance
+            .collection(FirebaseCollections.users)
+            .doc(user.uid)
+            .get();
+        
+        if (!mounted) return;
+        
+        if (userDoc.exists) {
+          final profileComplete = userDoc.data()?['profileSetupComplete'] ?? false;
+          
+          if (profileComplete) {
+            // User has completed onboarding, go to home
+            context.go('/home');
+          } else {
+            // User needs to complete onboarding
+            context.go('/onboarding/setup');
+          }
+        } else {
+          // No user document, needs onboarding
+          context.go('/onboarding/setup');
+        }
+      } catch (e) {
+        debugPrint('Error checking profile: $e');
+        // Default to onboarding on error
+        context.go('/onboarding/setup');
+      }
     } else {
       context.go('/login');
     }

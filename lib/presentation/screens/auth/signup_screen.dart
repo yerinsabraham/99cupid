@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_assets.dart';
+import '../../../core/constants/firebase_collections.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_text_field.dart';
@@ -32,6 +35,30 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     super.dispose();
   }
 
+  /// Check user profile and navigate accordingly
+  Future<void> _navigateAfterAuth() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection(FirebaseCollections.users)
+          .doc(user.uid)
+          .get();
+
+      if (!mounted) return;
+
+      if (userDoc.exists && userDoc.data()?['profileSetupComplete'] == true) {
+        context.go('/home');
+      } else {
+        context.go('/onboarding/setup');
+      }
+    } catch (e) {
+      debugPrint('Error checking profile: $e');
+      if (mounted) context.go('/onboarding/setup');
+    }
+  }
+
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -44,11 +71,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Verification email sent! Please check your inbox.'),
+            content: const Text('Account created! Let\'s set up your profile.'),
             backgroundColor: AppColors.success,
           ),
         );
-        context.go('/login');
+        // New users always go to onboarding
+        context.go('/onboarding/setup');
       }
     } catch (e) {
       if (mounted) {
@@ -65,6 +93,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Future<void> _handleGoogleSignUp() async {
     try {
       await ref.read(authNotifierProvider.notifier).signInWithGoogle();
+      await _navigateAfterAuth();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
