@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/firebase_collections.dart';
-import '../../providers/auth_provider.dart';
 
 /// Splash Screen - Initial loading screen with logo
 class SplashScreen extends ConsumerStatefulWidget {
@@ -28,18 +28,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
-    // Check auth state
-    final authState = ref.read(firebaseUserProvider);
+    // Get current user directly from Firebase Auth (not from provider)
+    // This ensures we get the actual current state after app reinstall
+    final User? currentUser = FirebaseAuth.instance.currentUser;
     
     // Navigate based on auth state
-    if (authState.hasValue && authState.value != null) {
-      final user = authState.value!;
-      
+    if (currentUser != null) {
       // Fetch user profile directly from Firestore to check profileSetupComplete
       try {
         final userDoc = await FirebaseFirestore.instance
             .collection(FirebaseCollections.users)
-            .doc(user.uid)
+            .doc(currentUser.uid)
             .get();
         
         if (!mounted) return;
@@ -64,17 +63,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         context.go('/onboarding/setup');
       }
     } else {
+      // No user logged in, go to login
       context.go('/login');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDarkMode ? Colors.white : Colors.black;
-    
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -83,7 +80,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               child: Center(
                 child: Image.asset(
                   AppAssets.logo,
-                  height: 120,
+                  width: 150,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -97,7 +94,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: textColor.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   letterSpacing: 1.5,
                 ),
               ),

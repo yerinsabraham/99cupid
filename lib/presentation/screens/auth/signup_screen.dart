@@ -128,7 +128,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     // Logo
                     Image.asset(
                       AppAssets.logo,
-                      height: 100,
+                      width: 120,
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 16),
