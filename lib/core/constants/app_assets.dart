@@ -1,8 +1,8 @@
 /// App asset paths
 class AppAssets {
   // Images
-  static const String logo = 'assets/icons/99logo.png';
-  static const String appLogo = 'assets/icons/applogo.png';
+  static const String logo = 'assets/images/app_logo.png';
+  static const String appLogo = 'assets/images/app_logo.png';
   
   // Icons
   static const String googleIcon = 'assets/icons/google.png';
