@@ -13,7 +13,9 @@ import {
   Eye, 
   Lock,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  Accessibility,
+  Heart
 } from 'lucide-react';
 
 /**
@@ -151,6 +153,45 @@ export default function SettingsPage() {
                 ) : (
                   <ChevronRight className="w-5 h-5 text-gray-400" />
                 )}
+              </button>
+            </div>
+          </div>
+
+          {/* Accessibility Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="p-4 border-b border-gray-100">
+              <h2 className="font-semibold text-gray-900 flex items-center">
+                <Accessibility className="w-5 h-5 mr-2 text-gray-600" />
+                Accessibility & Inclusion
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-100">
+              <button
+                onClick={() => navigate('/accessibility-settings')}
+                className="w-full px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center">
+                  <Accessibility className="w-5 h-5 text-purple-600 mr-3" />
+                  <div className="text-left">
+                    <p className="font-medium text-gray-900">Accessibility Settings</p>
+                    <p className="text-sm text-gray-500">Display, interaction & communication</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </button>
+
+              <button
+                onClick={() => navigate('/inclusive-dating')}
+                className="w-full px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center">
+                  <Heart className="w-5 h-5 text-pink-600 mr-3" />
+                  <div className="text-left">
+                    <p className="font-medium text-gray-900">Inclusive Dating Resources</p>
+                    <p className="text-sm text-gray-500">Guidelines, tips & support</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Heart, X, MapPin, CheckCircle, ShieldAlert, MoreVertical } from 'lucide-react';
 import { BlockService, ReportService } from '../../services/BlockReportService';
+import DisabilityBadge from '../accessibility/DisabilityBadge';
 
 export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled = false, showCompatibility = false }) {
   const [touchStart, setTouchStart] = useState(null);
@@ -149,6 +150,16 @@ export default function SwipeCard({ user, onSwipe, onTapProfile, style, disabled
               <span>Verified</span>
             </div>
           )}
+
+          {/* Disability Badge - Below Verified Badge */}
+          <div className={`absolute left-4 ${user.isVerified ? 'top-14' : 'top-4'}`}>
+            <DisabilityBadge
+              hasDisability={user.hasDisability}
+              disabilityPreference={user.disabilityPreference}
+              showBadgeOnProfile={user.showBadgeOnProfile !== false} // Default to true if not set
+              size="medium"
+            />
+          </div>
 
           {/* Compatibility Score Badge */}
           {showCompatibility && user.compatibilityScore && (

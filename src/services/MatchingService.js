@@ -8,12 +8,14 @@ import { db } from '../config/firebase';
 class MatchingService {
   // Scoring weights (total = 1.0)
   static WEIGHTS = {
-    location: 0.25,      // 25% - Geographic proximity
-    interests: 0.20,     // 20% - Common interests
-    preferences: 0.20,   // 20% - Gender, age, relationship goals
-    verification: 0.15,  // 15% - Verification status
-    activity: 0.10,      // 10% - User engagement level
-    compatibility: 0.10  // 10% - Lifestyle compatibility
+    location: 0.20,      // 20% - Geographic proximity
+    interests: 0.15,     // 15% - Common interests
+    preferences: 0.15,   // 15% - Gender, age, relationship goals
+    disability: 0.15,    // 15% - NEW: Disability compatibility
+    cultural: 0.15,      // 15% - NEW: Cultural openness
+    verification: 0.10,  // 10% - Verification status
+    activity: 0.05,      // 5% - User engagement level
+    compatibility: 0.05  // 5% - Lifestyle compatibility
   };
 
   /**
@@ -200,6 +202,8 @@ class MatchingService {
     const locationScore = this.calculateLocationScore(userProfile, candidateProfile);
     const interestsScore = this.calculateInterestsScore(userProfile, candidateProfile);
     const preferencesScore = this.calculatePreferencesScore(userProfile, candidateProfile);
+    const disabilityScore = this.calculateDisabilityCompatibility(userProfile, candidateProfile);
+    const culturalScore = this.calculateCulturalCompatibility(userProfile, candidateProfile);
     const verificationScore = this.calculateVerificationScore(candidateProfile);
     const activityScore = this.calculateActivityScore(candidateProfile);
     const compatibilityScore = this.calculateLifestyleCompatibility(userProfile, candidateProfile);
@@ -208,6 +212,8 @@ class MatchingService {
       (locationScore * this.WEIGHTS.location) +
       (interestsScore * this.WEIGHTS.interests) +
       (preferencesScore * this.WEIGHTS.preferences) +
+      (disabilityScore * this.WEIGHTS.disability) +
+      (culturalScore * this.WEIGHTS.cultural) +
       (verificationScore * this.WEIGHTS.verification) +
       (activityScore * this.WEIGHTS.activity) +
       (compatibilityScore * this.WEIGHTS.compatibility);
@@ -219,7 +225,9 @@ class MatchingService {
    * Get detailed score breakdown
    */
   static getScoreBreakdown(userProfile, candidateProfile) {
-    return {
+    redisability: this.calculateDisabilityCompatibility(userProfile, candidateProfile),
+      cultural: this.calculateCulturalCompatibility(userProfile, candidateProfile),
+      turn {
       location: this.calculateLocationScore(userProfile, candidateProfile),
       interests: this.calculateInterestsScore(userProfile, candidateProfile),
       preferences: this.calculatePreferencesScore(userProfile, candidateProfile),
@@ -485,6 +493,100 @@ class MatchingService {
     }
 
     return reasons;
+  }
+
+  /**
+   * Calculate disability compatibility score (0-100)
+   * NEW: For disability-inclusive dating features
+   */
+  static calculateDisabilityCompatibility(userProfile, candidateProfile) {
+    const userHasDisability = userProfile.hasDisability || false;
+    const userPreference = userProfile.disabilityPreference || 'no_preference';
+    const candidateHasDisability = candidateProfile.hasDisability || false;
+    const candidatePreference = candidateProfile.disabilityPreference || 'no_preference';
+
+    // If user has disability and candidate is not open to it, low score
+    if (userHasDisability && candidatePreference === 'no_preference') {
+      return 20; // Low but not zero (they might still connect)
+    }
+
+    // If user has disability and candidate is open/prefer/only, very high score
+    if (userHasDisability && ['open', 'prefer', 'only'].includes(candidatePreference)) {
+      return 100; // Perfect match - candidate is disability-confident
+    }
+
+    // If both have disabilities, extremely high compatibility
+    if (userHasDisability && candidateHasDisability) {
+      return 100; // Shared experience and understanding
+    }
+
+    // If user wants disability-confident matches, check candidate's openness
+    if (['prefer', 'only'].includes(userPreference)) {
+      if (candidateHasDisability || ['open', 'prefer', 'only'].includes(candidatePreference)) {
+        return 90; // User's preference is met
+      }
+      return 30; // User wants disability-confident but candidate isn't
+    }
+
+    // If user is open to disability
+    if (userPreference === 'open') {
+      if (candidateHasDisability) {
+        return 85; // Good match - user is open and candidate has disability
+      }
+      return 60; // Neutral - user is open, candidate doesn't have disability
+    }
+
+    // Default neutral score - no particular preference either way
+    return 50;
+  }
+
+  /**
+   * Calculate cultural compatibility score (0-100)
+   * NEW: For international/cultural exchange features
+   */
+  static calculateCulturalCompatibility(userProfile, candidateProfile) {
+    let score = 50; // Base score
+
+    // Check native languages
+    const userLanguages = userProfile.nativeLanguages || [];
+    const candidateLanguages = candidateProfile.nativeLanguages || [];
+    
+    // Common languages bonus
+    const commonLanguages = userLanguages.filter(lang => candidateLanguages.includes(lang));
+    if (commonLanguages.length > 0) {
+      score += 20;
+    }
+
+    // Different languages but both interested in learning = bonus for cultural exchange
+    const userLearning = userProfile.learningLanguages || [];
+    const candidateLearning = candidateProfile.learningLanguages || [];
+    
+    if (userLearning.some(lang => candidateLanguages.includes(lang)) ||
+        candidateLearning.some(lang => userLanguages.includes(lang))) {
+      score += 15; // Potential for language exchange
+    }
+
+    // Cultural interests
+    const userCulturalInterests = userProfile.culturalInterests || [];
+    const candidateCulturalInterests = candidateProfile.culturalInterests || [];
+    
+    const commonCulturalInterests = userCulturalInterests.filter(interest =>
+      candidateCulturalInterests.includes(interest)
+    );
+    
+    if (commonCulturalInterests.length > 0) {
+      score += Math.min(commonCulturalInterests.length * 10, 30);
+    }
+
+    // Games played together bonus (shows cultural engagement)
+    const userGameLevel = userProfile.culturalExplorerLevel || 'beginner';
+    const candidateGameLevel = candidateProfile.culturalExplorerLevel || 'beginner';
+    
+    if (userGameLevel !== 'beginner' || candidateGameLevel !== 'beginner') {
+      score += 10; // Both are engaged in cultural learning
+    }
+
+    return Math.min(score, 100);
   }
 }
 

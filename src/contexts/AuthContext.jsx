@@ -42,6 +42,27 @@ export function AuthProvider({ children }) {
       
       if (userDoc.exists()) {
         const profileData = { id: userDoc.id, ...userDoc.data() };
+        
+        // 🔧 AUTO-MIGRATION: Fix for existing users without profileSetupComplete field
+        if (profileData.profileSetupComplete === undefined) {
+          // If user has a displayName, they're an existing user - mark as complete
+          // This handles legacy accounts that existed before the profileSetupComplete field
+          const isExistingUser = profileData.displayName && profileData.displayName !== 'User';
+          
+          if (isExistingUser) {
+            // User has profile data, mark as complete
+            addDebugLog('Migrating existing user: setting profileSetupComplete = true', 'info');
+            await updateDoc(doc(db, 'users', user.uid), {
+              profileSetupComplete: true
+            });
+            profileData.profileSetupComplete = true;
+          } else {
+            // New user needs to complete profile
+            addDebugLog('New user needs to complete profile setup', 'info');
+            profileData.profileSetupComplete = false;
+          }
+        }
+        
         addDebugLog(`Profile loaded! Setup complete: ${profileData.profileSetupComplete}`, 'success');
         return profileData;
       } else {

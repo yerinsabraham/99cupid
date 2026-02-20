@@ -1,7 +1,10 @@
 import { 
   deleteUser as deleteAuthUser, 
-  reauthenticateWithCredential, 
-  EmailAuthProvider 
+  reauthenticateWithCredential,
+  reauthenticateWithPopup, 
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  OAuthProvider
 } from 'firebase/auth';
 import { 
   doc, 
@@ -28,7 +31,7 @@ const UserAccountService = {
    * - User profile in Firestore
    * - All related data (matches, chats, likes, swipes, verifications)
    * 
-   * @param {string} password - User's current password for re-authentication
+   * @param {string} password - User's current password for re-authentication (only for email/password users)
    * @returns {Promise<{success: boolean, error?: string}>}
    */
   async deleteAccount(password) {
@@ -41,10 +44,28 @@ const UserAccountService = {
     try {
       console.log('Starting account deletion for user:', user.uid);
 
-      // Step 1: Re-authenticate user (Firebase requires this for sensitive operations)
-      const credential = EmailAuthProvider.credential(user.email, password);
-      await reauthenticateWithCredential(user, credential);
-      console.log('User re-authenticated successfully');
+      // Step 1: Re-authenticate user based on their sign-in provider
+      const providerData = user.providerData;
+      
+      if (providerData.some(info => info.providerId === 'google.com')) {
+        // Google Sign-In re-authentication
+        const googleProvider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(user, googleProvider);
+        console.log('User re-authenticated with Google');
+      } else if (providerData.some(info => info.providerId === 'apple.com')) {
+        // Apple Sign-In re-authentication
+        const appleProvider = new OAuthProvider('apple.com');
+        await reauthenticateWithPopup(user, appleProvider);
+        console.log('User re-authenticated with Apple');
+      } else {
+        // Email/Password re-authentication
+        if (!user.email) {
+          return { success: false, error: 'No email found for this account' };
+        }
+        const credential = EmailAuthProvider.credential(user.email, password);
+        await reauthenticateWithCredential(user, credential);
+        console.log('User re-authenticated with email/password');
+      }
 
       // Step 2: Mark user as deleted in Firestore first (soft delete)
       const userRef = doc(db, 'users', user.uid);

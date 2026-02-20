@@ -15,6 +15,42 @@ export class UserModel {
     this.location = data.location || '';
     this.interests = data.interests || [];
     
+    // Disability Information (Optional - for inclusive dating)
+    this.hasDisability = data.hasDisability || false;
+    this.disabilityTypes = data.disabilityTypes || [];
+    this.disabilityDescription = data.disabilityDescription || '';
+    this.disabilityVisibility = data.disabilityVisibility || 'private'; // 'public' | 'matches' | 'private'
+    
+    // Matching Preferences
+    this.disabilityPreference = data.disabilityPreference || 'no_preference'; // 'no_preference' | 'open' | 'prefer' | 'only'
+    
+    // Accessibility Preferences
+    this.accessibilityNeeds = data.accessibilityNeeds || {
+      preferredCommunication: [],
+      signLanguage: '',
+      needsExtraTime: false,
+      screenReaderUser: false,
+      highContrastMode: false,
+      reducedMotion: false
+    };
+    
+    // Cultural Profile (for international dating features)
+    this.nativeLanguages = data.nativeLanguages || [];
+    this.learningLanguages = data.learningLanguages || [];
+    this.culturalInterests = data.culturalInterests || [];
+    
+    // Game Stats
+    this.gamesPlayed = data.gamesPlayed || 0;
+    this.gamesWon = data.gamesWon || 0;
+    this.culturalExplorerLevel = data.culturalExplorerLevel || 'beginner';
+    this.countriesLearned = data.countriesLearned || [];
+    this.phrasesLearned = data.phrasesLearned || 0;
+    this.culturalBadges = data.culturalBadges || [];
+    
+    // Compatibility Game Answers
+    this.thisOrThatAnswers = data.thisOrThatAnswers || {};
+    this.compatibilityScores = data.compatibilityScores || {};
+    
     // Verification and account status
     this.isVerifiedAccount = data.isVerifiedAccount || false;
     this.isVerified = data.isVerified || false; // Selfie verified
@@ -57,6 +93,23 @@ export class UserModel {
       gender: this.gender,
       location: this.location,
       interests: this.interests,
+      hasDisability: this.hasDisability,
+      disabilityTypes: this.disabilityTypes,
+      disabilityDescription: this.disabilityDescription,
+      disabilityVisibility: this.disabilityVisibility,
+      disabilityPreference: this.disabilityPreference,
+      accessibilityNeeds: this.accessibilityNeeds,
+      nativeLanguages: this.nativeLanguages,
+      learningLanguages: this.learningLanguages,
+      culturalInterests: this.culturalInterests,
+      gamesPlayed: this.gamesPlayed,
+      gamesWon: this.gamesWon,
+      culturalExplorerLevel: this.culturalExplorerLevel,
+      countriesLearned: this.countriesLearned,
+      phrasesLearned: this.phrasesLearned,
+      culturalBadges: this.culturalBadges,
+      thisOrThatAnswers: this.thisOrThatAnswers,
+      compatibilityScores: this.compatibilityScores,
       isVerifiedAccount: this.isVerifiedAccount,
       isVerified: this.isVerified,
       profileSetupComplete: this.profileSetupComplete,
@@ -101,9 +154,10 @@ export class UserModel {
 
   /**
    * Get public profile (for sharing with other users)
+   * @param {boolean} isMatched - Whether viewer has matched with this user
    */
-  getPublicProfile() {
-    return {
+  getPublicProfile(isMatched = false) {
+    const profile = {
       uid: this.uid,
       displayName: this.displayName,
       photoURL: this.photoURL,
@@ -114,7 +168,21 @@ export class UserModel {
       location: this.location,
       interests: this.interests,
       isVerified: this.isVerified,
+      disabilityPreference: this.disabilityPreference,
+      nativeLanguages: this.nativeLanguages,
+      culturalInterests: this.culturalInterests,
+      thisOrThatAnswers: this.thisOrThatAnswers,
     };
+
+    // Include disability info based on visibility settings
+    if (this.disabilityVisibility === 'public' || 
+        (this.disabilityVisibility === 'matches' && isMatched)) {
+      profile.hasDisability = this.hasDisability;
+      profile.disabilityTypes = this.disabilityTypes;
+      profile.disabilityDescription = this.disabilityDescription;
+    }
+
+    return profile;
   }
 
   /**

@@ -18,8 +18,7 @@ service firebase.storage {
     }
     
     function isValidProfileImage() {
-      return isValidImage() && 
-             request.resource.size > 50 * 1024; // Min 50KB
+      return isValidImage(); // Removed min 50KB requirement for better UX
     }
     
     // Profile Images - Users can upload/update/delete their own photos

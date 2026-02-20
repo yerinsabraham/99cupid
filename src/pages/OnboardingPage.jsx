@@ -7,6 +7,7 @@ import WelcomeScreen from '../components/onboarding/WelcomeScreen';
 import BasicInfoStep from '../components/onboarding/BasicInfoStep';
 import PreferencesStep from '../components/onboarding/PreferencesStep';
 import InterestsStep from '../components/onboarding/InterestsStep';
+import DisabilityStep from '../components/onboarding/DisabilityStep';
 import PhotoUploadStepV2 from '../components/onboarding/PhotoUploadStepV2';
 import VerificationService from '../services/VerificationService';
 
@@ -20,6 +21,11 @@ export default function OnboardingPage() {
     location: '',
     bio: '',
     interests: [],
+    hasDisability: false,
+    disabilityTypes: [],
+    disabilityDescription: '',
+    disabilityVisibility: 'private',
+    disabilityPreference: 'no_preference',
     photos: []
   });
   const [loading, setLoading] = useState(false);
@@ -117,12 +123,19 @@ export default function OnboardingPage() {
       onNext={() => setCurrentStep(4)}
       onBack={() => setCurrentStep(2)}
     />,
+    <DisabilityStep
+      key="disability"
+      data={onboardingData}
+      onUpdate={updateOnboardingData}
+      onNext={() => setCurrentStep(5)}
+      onBack={() => setCurrentStep(3)}
+    />,
     <PhotoUploadStepV2
       key="photos"
       data={onboardingData}
       onUpdate={updateOnboardingData}
       onNext={saveProfile}
-      onBack={() => setCurrentStep(3)}
+      onBack={() => setCurrentStep(4)}
       loading={loading}
     />
   ];

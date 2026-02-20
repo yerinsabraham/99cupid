@@ -130,7 +130,10 @@ export const SwipeService = {
         createdAt: serverTimestamp(),
         lastMessageAt: null,
         lastMessage: null,
-        unreadCount: 0,
+        unreadCount: {
+          [user1Id]: 0,
+          [user2Id]: 0,
+        },
       };
 
       const chatDocRef = await addDoc(chatRef, chatData);

@@ -25,6 +25,16 @@ import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import SafetyCenterPage from './pages/SafetyCenterPage';
 import SafetyModerationPage from './pages/SafetyModerationPage';
 import SettingsPage from './pages/SettingsPage';
+import AccessibilitySettingsPage from './pages/AccessibilitySettingsPage';
+import InclusiveDatingPage from './pages/InclusiveDatingPage';
+
+// Policy Pages
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
+import CommunityGuidelinesPage from './pages/CommunityGuidelinesPage';
+import SafetyTipsPage from './pages/SafetyTipsPage';
+import DataDeletionPage from './pages/DataDeletionPage';
+import ModerationPolicyPage from './pages/ModerationPolicyPage';
 
 /**
  * AuthGuard - Redirects authenticated users away from auth pages
@@ -90,6 +100,14 @@ function AppRoutes() {
       
       {/* Landing Page - Hidden for now, accessible via direct URL */}
       <Route path="/landing" element={<LandingPage />} />
+      
+      {/* Public Policy Pages - No authentication required */}
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
+      <Route path="/safety-tips" element={<SafetyTipsPage />} />
+      <Route path="/data-deletion" element={<DataDeletionPage />} />
+      <Route path="/moderation-policy" element={<ModerationPolicyPage />} />
       
       {/* Legacy admin routes - redirect to main routes */}
       <Route path="/admin-login" element={<Navigate to="/login" replace />} />
@@ -174,6 +192,24 @@ function AppRoutes() {
         element={
           <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/accessibility-settings"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <AccessibilitySettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inclusive-dating"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={true}>
+            <InclusiveDatingPage />
           </ProtectedRoute>
         }
       />

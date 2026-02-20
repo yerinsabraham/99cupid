@@ -6,6 +6,7 @@ import { db, storage } from '../config/firebase';
 import { useAuth } from '../hooks/useAuth';
 import AppLayout from '../components/layout/AppLayout';
 import ProfileCompletion from '../components/common/ProfileCompletion';
+import DisabilityProfileSection from '../components/accessibility/DisabilityProfileSection';
 import { ArrowLeft, Camera, X, Plus, Save, Loader } from 'lucide-react';
 
 export default function EditProfilePage() {
@@ -31,6 +32,13 @@ export default function EditProfilePage() {
 
   const [photos, setPhotos] = useState([]);
   const [newPhotoFiles, setNewPhotoFiles] = useState([]);
+  const [disabilityData, setDisabilityData] = useState({
+    hasDisability: false,
+    disabilityTypes: [],
+    disabilityDescription: '',
+    disabilityVisibility: 'private',
+    disabilityPreference: 'no_preference',
+  });
 
   useEffect(() => {
     if (currentUser) {
@@ -69,6 +77,15 @@ export default function EditProfilePage() {
         });
         
         setPhotos(data.photos || []);
+        
+        // Load disability data
+        setDisabilityData({
+          hasDisability: data.hasDisability || false,
+          disabilityTypes: data.disabilityTypes || [],
+          disabilityDescription: data.disabilityDescription || '',
+          disabilityVisibility: data.disabilityVisibility || 'private',
+          disabilityPreference: data.disabilityPreference || 'no_preference',
+        });
       } else {
         console.warn('User document does not exist');
       }
@@ -139,6 +156,12 @@ export default function EditProfilePage() {
         lookingFor: formData.lookingFor,
         relationshipGoals: formData.relationshipGoals,
         photos: allPhotos,
+        // Disability profile data
+        hasDisability: disabilityData.hasDisability,
+        disabilityTypes: disabilityData.disabilityTypes,
+        disabilityDescription: disabilityData.disabilityDescription,
+        disabilityVisibility: disabilityData.disabilityVisibility,
+        disabilityPreference: disabilityData.disabilityPreference,
         updatedAt: new Date(),
       });
 
@@ -289,7 +312,7 @@ export default function EditProfilePage() {
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
               />
             </div>
 
@@ -300,7 +323,7 @@ export default function EditProfilePage() {
                 onChange={(e) => handleInputChange('bio', e.target.value)}
                 rows="4"
                 maxLength="500"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none text-gray-900"
                 placeholder="Tell people about yourself..."
               />
               <p className="text-xs text-gray-500 mt-1">{formData.bio.length}/500</p>
@@ -313,7 +336,7 @@ export default function EditProfilePage() {
                   type="number"
                   value={formData.age}
                   onChange={(e) => handleInputChange('age', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
                 />
               </div>
 
@@ -322,7 +345,7 @@ export default function EditProfilePage() {
                 <select
                   value={formData.gender}
                   onChange={(e) => handleInputChange('gender', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
                 >
                   <option value="">Select</option>
                   <option value="male">Male</option>
@@ -339,7 +362,7 @@ export default function EditProfilePage() {
                 type="text"
                 value={formData.location}
                 onChange={(e) => handleInputChange('location', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
                 placeholder="City, Country"
               />
             </div>
@@ -355,7 +378,7 @@ export default function EditProfilePage() {
                 type="text"
                 value={formData.occupation}
                 onChange={(e) => handleInputChange('occupation', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
                 placeholder="Your job title"
               />
             </div>
@@ -366,7 +389,7 @@ export default function EditProfilePage() {
                 type="text"
                 value={formData.education}
                 onChange={(e) => handleInputChange('education', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
                 placeholder="Your school or degree"
               />
             </div>
@@ -404,7 +427,7 @@ export default function EditProfilePage() {
               <select
                 value={formData.lookingFor}
                 onChange={(e) => handleInputChange('lookingFor', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
               >
                 <option value="">Select</option>
                 <option value="male">Men</option>
@@ -418,7 +441,7 @@ export default function EditProfilePage() {
               <select
                 value={formData.relationshipGoals}
                 onChange={(e) => handleInputChange('relationshipGoals', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 font-medium"
               >
                 <option value="">Select</option>
                 <option value="long-term">Long-term relationship</option>
@@ -427,6 +450,16 @@ export default function EditProfilePage() {
                 <option value="figuring-out">Still figuring it out</option>
               </select>
             </div>
+          </div>
+
+          {/* Disability Profile (New Feature) */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">🌈 Inclusive Dating</h2>
+            <p className="text-sm text-gray-600 mb-4">Help us create a more inclusive community (optional)</p>
+            <DisabilityProfileSection
+              value={disabilityData}
+              onUpdate={setDisabilityData}
+            />
           </div>
 
           {/* Save Button (Mobile) */}

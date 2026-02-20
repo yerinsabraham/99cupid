@@ -72,6 +72,7 @@ service cloud.firestore {
     // Chats Collection - Only participants can read
     match /chats/{chatId} {
       allow read: if isChatParticipant(chatId);
+      allow list: if isAuthenticated(); // Allow querying chats where user is participant
       allow create: if isAuthenticated();
       allow update: if isChatParticipant(chatId);
       // Allow participants to delete chats (needed for account deletion)
@@ -112,6 +113,61 @@ service cloud.firestore {
       allow update: if isAdmin();
       // Allow deletion by report creator (needed for account deletion)
       allow delete: if isAuthenticated() && resource.data.reporterId == request.auth.uid;
+    }
+    
+    // Accessibility Settings Collection - PRIVATE (NEW)
+    match /accessibility_settings/{userId} {
+      // Only the user can read/write their own accessibility settings
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Cultural Games Collection (NEW)
+    match /cultural_games/{gameId} {
+      // Players in the game can read their games
+      allow read: if isAuthenticated() && (
+        resource.data.player1Id == request.auth.uid ||
+        resource.data.player2Id == request.auth.uid
+      );
+      // Any authenticated user can create a game (will validate players in app)
+      allow create: if isAuthenticated() && request.resource.data.player1Id == request.auth.uid;
+      // Players can update the game (submit answers)
+      allow update: if isAuthenticated() && (
+        resource.data.player1Id == request.auth.uid ||
+        resource.data.player2Id == request.auth.uid
+      );
+      // Players can delete their games
+      allow delete: if isAuthenticated() && (
+        resource.data.player1Id == request.auth.uid ||
+        resource.data.player2Id == request.auth.uid
+      );
+    }
+
+    // Cultural Phrases Collection (NEW)
+    match /cultural_phrases/{phraseId} {
+      // Anyone can read phrases (for learning)
+      allow read: if isAuthenticated();
+      // User can create their own phrases
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // User can update/delete their own phrases
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Game Templates Collection (NEW) - Read-only for users, write for admins
+    match /game_templates/{templateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // AI Conversation Suggestions Collection (NEW) - PRIVATE
+    match /ai_conversation_suggestions/{suggestionId} {
+      // Only the requesting user can read/write their suggestions
+      allow read, write: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Inclusive Resources Collection (NEW) - Public read
+    match /inclusive_resources/{resourceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
     
     // Likes Collection
