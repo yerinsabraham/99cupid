@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { accessibilityService } from '../../services/AccessibilityService';
+import { useAuth } from '../hooks/useAuth';
+import { accessibilityService } from '../services/AccessibilityService';
 import { 
   Settings, 
   Eye, 

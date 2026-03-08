@@ -35,6 +35,7 @@ import CommunityGuidelinesPage from './pages/CommunityGuidelinesPage';
 import SafetyTipsPage from './pages/SafetyTipsPage';
 import DataDeletionPage from './pages/DataDeletionPage';
 import ModerationPolicyPage from './pages/ModerationPolicyPage';
+import SupportPage from './pages/SupportPage';
 
 /**
  * AuthGuard - Redirects authenticated users away from auth pages
@@ -108,6 +109,7 @@ function AppRoutes() {
       <Route path="/safety-tips" element={<SafetyTipsPage />} />
       <Route path="/data-deletion" element={<DataDeletionPage />} />
       <Route path="/moderation-policy" element={<ModerationPolicyPage />} />
+      <Route path="/support" element={<SupportPage />} />
       
       {/* Legacy admin routes - redirect to main routes */}
       <Route path="/admin-login" element={<Navigate to="/login" replace />} />

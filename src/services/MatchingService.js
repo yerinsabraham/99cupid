@@ -225,15 +225,15 @@ class MatchingService {
    * Get detailed score breakdown
    */
   static getScoreBreakdown(userProfile, candidateProfile) {
-    redisability: this.calculateDisabilityCompatibility(userProfile, candidateProfile),
-      cultural: this.calculateCulturalCompatibility(userProfile, candidateProfile),
-      turn {
+    return {
       location: this.calculateLocationScore(userProfile, candidateProfile),
       interests: this.calculateInterestsScore(userProfile, candidateProfile),
       preferences: this.calculatePreferencesScore(userProfile, candidateProfile),
       verification: this.calculateVerificationScore(candidateProfile),
       activity: this.calculateActivityScore(candidateProfile),
-      compatibility: this.calculateLifestyleCompatibility(userProfile, candidateProfile)
+      compatibility: this.calculateLifestyleCompatibility(userProfile, candidateProfile),
+      disability: this.calculateDisabilityCompatibility(userProfile, candidateProfile),
+      cultural: this.calculateCulturalCompatibility(userProfile, candidateProfile)
     };
   }
 
