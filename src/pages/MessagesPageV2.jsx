@@ -54,9 +54,17 @@ export default function MessagesPageV2() {
   }, [currentUser]);
 
   const filteredChats = chats.filter((chat) => {
-    const otherUserName =
-      chat.user1Id === currentUser.uid ? chat.user2Name : chat.user1Name;
-    return otherUserName.toLowerCase().includes(searchQuery.toLowerCase());
+    // Support both data models: user1Id/user2Id fields or participantNames map
+    let otherUserName;
+    if (chat.user1Id && chat.user2Id) {
+      otherUserName = chat.user1Id === currentUser.uid ? chat.user2Name : chat.user1Name;
+    } else if (chat.participantNames) {
+      const otherId = chat.participants?.find(id => id !== currentUser.uid);
+      otherUserName = otherId ? chat.participantNames[otherId] : 'User';
+    } else {
+      otherUserName = 'User';
+    }
+    return (otherUserName || '').toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const handleChatClick = (chatId) => {
@@ -113,12 +121,17 @@ export default function MessagesPageV2() {
         ) : (
           <div className="space-y-3">
             {filteredChats.map((chat) => {
-              const otherUserId =
-                chat.user1Id === currentUser.uid ? chat.user2Id : chat.user1Id;
-              const otherUserName =
-                chat.user1Id === currentUser.uid ? chat.user2Name : chat.user1Name;
-              const otherUserPhoto =
-                chat.user1Id === currentUser.uid ? chat.user2Photo : chat.user1Photo;
+              // Support both data models
+              let otherUserId, otherUserName, otherUserPhoto;
+              if (chat.user1Id && chat.user2Id) {
+                otherUserId = chat.user1Id === currentUser.uid ? chat.user2Id : chat.user1Id;
+                otherUserName = chat.user1Id === currentUser.uid ? chat.user2Name : chat.user1Name;
+                otherUserPhoto = chat.user1Id === currentUser.uid ? chat.user2Photo : chat.user1Photo;
+              } else {
+                otherUserId = chat.participants?.find(id => id !== currentUser.uid);
+                otherUserName = otherUserId && chat.participantNames ? chat.participantNames[otherUserId] : 'User';
+                otherUserPhoto = otherUserId && chat.participantPhotos ? chat.participantPhotos[otherUserId] : null;
+              }
 
               const lastMessageTime = chat.lastMessageAt
                 ? new Date(chat.lastMessageAt).toLocaleString('en-US', {

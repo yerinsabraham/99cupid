@@ -23,8 +23,7 @@ service cloud.firestore {
     function isChatParticipant(chatId) {
       let chatDoc = get(/databases/$(database)/documents/chats/$(chatId)).data;
       return isAuthenticated() && (
-        chatDoc.user1Id == request.auth.uid || 
-        chatDoc.user2Id == request.auth.uid
+        request.auth.uid in chatDoc.participants
       );
     }
     

@@ -168,6 +168,11 @@ export default function SignUpForm() {
           {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
         </div>
 
+        {/* Free until launch notice */}
+        <div className="rounded-xl border border-pink-200 bg-pink-50 px-4 py-3 text-sm text-pink-800">
+          <strong>Free during launch!</strong> Full access is free while we launch. A $0.99/month plan will apply after — you'll be notified before any charges.
+        </div>
+
         {/* Message Display */}
         {message.text && (
           <div className={`p-4 rounded-xl animate-fade-in ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>

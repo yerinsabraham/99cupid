@@ -54,8 +54,13 @@ export default function ChatPage() {
       const chatDoc = await getDoc(doc(db, 'chats', chatId));
       if (chatDoc.exists()) {
         const chatData = chatDoc.data();
-        const otherUserId =
-          chatData.user1Id === currentUser.uid ? chatData.user2Id : chatData.user1Id;
+        // Support both data models: user1Id/user2Id or participants array
+        let otherUserId;
+        if (chatData.user1Id && chatData.user2Id) {
+          otherUserId = chatData.user1Id === currentUser.uid ? chatData.user2Id : chatData.user1Id;
+        } else if (chatData.participants) {
+          otherUserId = chatData.participants.find(id => id !== currentUser.uid);
+        }
 
         // Load other user's profile
         const userDoc = await getDoc(doc(db, 'users', otherUserId));

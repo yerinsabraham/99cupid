@@ -424,7 +424,20 @@ export function AuthProvider({ children }) {
         } catch (error) {
           addDebugLog(`Redirect ERROR: ${error.code} - ${error.message}`, 'error');
           localStorage.removeItem('googleSignInPending');
-          setError(`Google sign-in failed: ${error.message}`);
+          
+          // "missing initial state" means the browser's sessionStorage was cleared
+          // (e.g. browser restart, private mode, storage partitioning).
+          // This is not a user-facing error — just clean up and let them sign in normally.
+          const isStaleSesssionError =
+            error.message?.includes('missing initial state') ||
+            error.code === 'auth/invalid-credential' ||
+            error.code === 'auth/missing-initial-state';
+          
+          if (!isStaleSesssionError) {
+            setError(`Google sign-in failed: ${error.message}`);
+          } else {
+            addDebugLog('Stale redirect session cleared. User can sign in normally.', 'warning');
+          }
         }
       }
       
@@ -448,14 +461,31 @@ export function AuthProvider({ children }) {
         if (user) {
           setCurrentUser(user);
           
-          // Only load profile if not already loaded
+          // Always attempt to load profile when we have a user but no profile yet
+          // This handles Google sign-in race conditions where onAuthStateChanged fires multiple times
           if (!profileLoaded.current) {
             addDebugLog('Loading profile...', 'info');
             setLoading(true);
-            const profile = await loadOrCreateProfile(user);
-            setUserProfile(profile);
-            profileLoaded.current = true;
-            addDebugLog(`Profile loaded! Setup complete: ${profile.profileSetupComplete}`, 'success');
+            try {
+              const profile = await loadOrCreateProfile(user);
+              setUserProfile(profile);
+              profileLoaded.current = true;
+              addDebugLog(`Profile loaded! Setup complete: ${profile.profileSetupComplete}`, 'success');
+            } catch (profileErr) {
+              addDebugLog(`Profile load failed: ${profileErr.message}`, 'error');
+              // Create a minimal fallback profile so the app doesn't get stuck on loading
+              const fallbackProfile = {
+                id: user.uid,
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || 'User',
+                photoURL: user.photoURL || null,
+                profileSetupComplete: false,
+              };
+              setUserProfile(fallbackProfile);
+              profileLoaded.current = true;
+              addDebugLog('Using fallback profile', 'warning');
+            }
           } else {
             addDebugLog('Profile already loaded, skipping', 'info');
           }

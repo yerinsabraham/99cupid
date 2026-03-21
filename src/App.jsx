@@ -5,7 +5,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HeartLoader from './components/common/HeartLoader';
 
 // Pages
-import ComingSoonPage from './pages/ComingSoonPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
@@ -93,14 +92,16 @@ function AuthGuard({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Main App - Login as default entry point */}
-      <Route path="/" element={<AuthGuard><LoginPage /></AuthGuard>} />
+      {/* Website Home */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Main App Auth Entry */}
       <Route path="/login" element={<AuthGuard><LoginPage /></AuthGuard>} />
       <Route path="/signup" element={<AuthGuard><SignUpPage /></AuthGuard>} />
       <Route path="/forgot-password" element={<AuthGuard><ForgotPasswordPage /></AuthGuard>} />
       
-      {/* Landing Page - Hidden for now, accessible via direct URL */}
-      <Route path="/landing" element={<LandingPage />} />
+      {/* Legacy landing URL now routes to website home */}
+      <Route path="/landing" element={<Navigate to="/" replace />} />
       
       {/* Public Policy Pages - No authentication required */}
       <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
@@ -114,6 +115,16 @@ function AppRoutes() {
       {/* Legacy admin routes - redirect to main routes */}
       <Route path="/admin-login" element={<Navigate to="/login" replace />} />
       <Route path="/admin-signup" element={<Navigate to="/signup" replace />} />
+
+      {/* Email Verification */}
+      <Route
+        path="/verify-email"
+        element={
+          <ProtectedRoute requireVerification={false} requireProfileSetup={false}>
+            <EmailVerificationPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Onboarding Route */}
       <Route

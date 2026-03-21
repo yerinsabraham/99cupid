@@ -1,5 +1,4 @@
 import { Heart } from 'lucide-react';
-import logoImage from '/assets/icons/applogo.png';
 
 export default function AuthLayout({ children, title, subtitle }) {
   return (
@@ -9,9 +8,9 @@ export default function AuthLayout({ children, title, subtitle }) {
         <div className="text-center mb-4">
           <div className="flex justify-center -mb-3">
             <img 
-              src={logoImage} 
-              alt="99cupid logo" 
-              className="w-40 h-40 object-contain"
+              src="/icon_logo4.png" 
+              alt="99Cupid" 
+              className="w-32 h-32 object-contain"
             />
           </div>
           
@@ -33,7 +32,7 @@ export default function AuthLayout({ children, title, subtitle }) {
 
         {/* Footer */}
         <p className="text-center text-gray-500 text-xs mt-3">
-          Real connections at just $0.99/month
+          Free during launch · $0.99/month after
         </p>
       </div>
     </div>

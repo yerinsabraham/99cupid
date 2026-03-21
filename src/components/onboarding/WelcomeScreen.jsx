@@ -12,11 +12,15 @@ export default function WelcomeScreen({ onNext }) {
 
         <div className="space-y-4">
           <h1 className="text-5xl font-bold text-gray-800">
-            Welcome to <span className="text-pink-600">99cupid</span>
+            Welcome to <span className="text-pink-600">99Cupid</span>
           </h1>
           <p className="text-xl text-gray-600">
-            Where real connections begin at just $0.99/month
+            Where real connections begin
           </p>
+        </div>
+
+        <div className="rounded-2xl border border-pink-200 bg-pink-50 px-5 py-4 text-sm text-pink-800">
+          <strong>Free access during launch!</strong> Enjoy everything for free while the apps launch. A $0.99/month plan starts after — you'll be notified before any charges.
         </div>
 
         <button
