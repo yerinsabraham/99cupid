@@ -28,6 +28,7 @@ lerna-debug.log*
 
 # Firebase
 firebase-debug.log
+.firebase/
 # Note: .firebaserc is now tracked (contains project ID only, not sensitive)
 
 # OS
