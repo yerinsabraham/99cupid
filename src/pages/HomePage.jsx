@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Sparkles, TrendingUp, SlidersHorizontal } from 'lucide-react';
+import { Heart, Sparkles, TrendingUp, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import AppLayout from '../components/layout/AppLayout';
 import SwipeCard from '../components/swipe/SwipeCard';
@@ -204,6 +204,18 @@ export default function HomePage() {
     handleSwipe('left');
   };
 
+  // Keyboard arrow-key navigation (desktop)
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') handleSwipe('left');
+      else if (e.key === 'ArrowRight') handleSwipe('right');
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // Re-bind whenever swiping state or current card changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [swiping, currentIndex, users.length, currentUser?.uid]);
+
   const handleReportFromProfile = () => {
     alert('Report functionality coming soon!');
   };
@@ -309,8 +321,21 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Swipe Card Area */}
-        <div className="relative h-[600px] max-h-[70vh]">
+        {/* Swipe Card Area — wrapped in flex so desktop arrows flank the card */}
+        <div className="flex items-center gap-3">
+
+          {/* Left arrow — pass (desktop only) */}
+          <button
+            onClick={() => handleSwipe('left')}
+            disabled={swiping || !currentUser_}
+            aria-label="Pass"
+            title="Pass (← arrow key)"
+            className="hidden md:flex flex-shrink-0 w-12 h-12 bg-white rounded-full shadow-xl items-center justify-center border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 hover:scale-110 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-6 h-6 text-red-400" />
+          </button>
+
+        <div className="relative flex-1 h-[600px] max-h-[70vh]">
           {users.length > 0 ? (
             <>
               {/* Show next card in background for depth effect */}
@@ -347,11 +372,24 @@ export default function HomePage() {
           )}
         </div>
 
+          {/* Right arrow — like (desktop only) */}
+          <button
+            onClick={() => handleSwipe('right')}
+            disabled={swiping || !currentUser_}
+            aria-label="Like"
+            title="Like (→ arrow key)"
+            className="hidden md:flex flex-shrink-0 w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full shadow-xl items-center justify-center hover:from-pink-600 hover:to-pink-700 hover:scale-110 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="w-6 h-6 text-white" />
+          </button>
+
+        </div>{/* end arrow + card flex container */}
+
         {/* Instructions - Prominent */}
         <div className="mt-6">
           <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-4 shadow-md border border-pink-100">
             <div className="flex items-center justify-center space-x-8">
-              {/* Swipe Left */}
+              {/* Swipe / Arrow Left */}
               <div className="flex items-center space-x-2">
                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                   <span className="text-2xl">👈</span>
@@ -359,17 +397,19 @@ export default function HomePage() {
                 <div className="text-left">
                   <p className="text-sm font-semibold text-gray-800">Swipe Left</p>
                   <p className="text-xs text-gray-600">Pass</p>
+                  <p className="text-xs text-gray-400 hidden md:block">or ← arrow key</p>
                 </div>
               </div>
 
               {/* Divider */}
               <div className="h-12 w-px bg-gray-300"></div>
 
-              {/* Swipe Right */}
+              {/* Swipe / Arrow Right */}
               <div className="flex items-center space-x-2">
                 <div className="text-left">
                   <p className="text-sm font-semibold text-gray-800">Swipe Right</p>
                   <p className="text-xs text-pink-600">Like ❤️</p>
+                  <p className="text-xs text-gray-400 hidden md:block">or → arrow key</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center">
                   <span className="text-2xl">👉</span>

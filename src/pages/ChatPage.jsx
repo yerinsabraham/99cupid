@@ -140,7 +140,7 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || sending || !hasSubscription) return;
+    if (!newMessage.trim() || sending) return; // Paywall check removed
 
     setSending(true);
     try {
@@ -184,92 +184,8 @@ export default function ChatPage() {
     );
   }
 
-  // Check if user doesn't have subscription
-  if (!hasSubscription) {
-    return (
-      <div className="flex flex-col h-screen bg-gray-50">
-        {/* Chat Header */}
-        <div className="bg-white border-b shadow-sm px-4 py-3 flex items-center space-x-4">
-          <button
-            onClick={() => navigate('/messages')}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-
-          {otherUser && (
-            <>
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
-                {otherUser.photoURL ? (
-                  <img
-                    src={otherUser.photoURL}
-                    alt={otherUser.displayName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-white font-bold text-lg">
-                    {otherUser.displayName?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex-1">
-                <h2 className="font-semibold text-gray-800">{otherUser.displayName || 'User'}</h2>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Subscription Paywall */}
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
-
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Unlock Messaging</h2>
-            <p className="text-gray-600 mb-6">
-              Subscribe to start chatting with your matches and build genuine connections.
-            </p>
-
-            <div className="bg-pink-50 border-2 border-pink-200 rounded-2xl p-4 mb-6">
-              <div className="text-3xl font-bold text-pink-600 mb-2">$0.99</div>
-              <p className="text-gray-600 text-sm">per month</p>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center space-x-3 text-sm text-gray-700">
-                <CheckCircle className="w-5 h-5 text-pink-600 flex-shrink-0" />
-                <span>Unlimited messaging</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm text-gray-700">
-                <CheckCircle className="w-5 h-5 text-pink-600 flex-shrink-0" />
-                <span>Chat with all matches</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm text-gray-700">
-                <CheckCircle className="w-5 h-5 text-pink-600 flex-shrink-0" />
-                <span>See read receipts</span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => navigate('/subscription')}
-              className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg mb-3"
-            >
-              Subscribe Now
-            </button>
-
-            <button
-              onClick={() => navigate('/messages')}
-              className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
-            >
-              Go Back
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // PAYWALL COMMENTED OUT — all users can access chat
+  // if (!hasSubscription) { ... }
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">

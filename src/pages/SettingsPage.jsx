@@ -13,7 +13,6 @@ import {
   Eye, 
   Lock,
   ChevronRight,
-  AlertCircle,
   Accessibility,
   Heart
 } from 'lucide-react';
@@ -28,6 +27,7 @@ export default function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [exportLoading, setExportLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   /**
    * Handle account deletion
@@ -259,31 +259,40 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Danger Zone */}
-          <div className="bg-red-50 rounded-2xl border-2 border-red-200">
-            <div className="p-4 border-b border-red-200">
-              <h2 className="font-semibold text-red-900 flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" />
-                Danger Zone
+          {/* Advanced (collapsed by default) */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors rounded-2xl"
+            >
+              <h2 className="font-semibold text-gray-500 text-sm flex items-center">
+                <Settings className="w-4 h-4 mr-2 text-gray-400" />
+                Advanced
               </h2>
-            </div>
-            <div className="p-4 space-y-3">
-              <p className="text-sm text-red-700">
-                Once you delete your account, there is no going back. Please be certain.
-              </p>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
-              >
-                <Trash2 className="w-5 h-5" />
-                <span>Delete My Account</span>
-              </button>
-              {deleteError && (
-                <p className="text-sm text-red-700 bg-red-100 p-3 rounded-xl">
-                  {deleteError}
+              <ChevronRight
+                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                  showAdvanced ? 'rotate-90' : ''
+                }`}
+              />
+            </button>
+
+            {showAdvanced && (
+              <div className="border-t border-gray-100 px-4 py-4 space-y-3">
+                <p className="text-xs text-gray-500">
+                  Permanently deletes your account and all associated data. This action cannot be undone.
                 </p>
-              )}
-            </div>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-2 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete my account</span>
+                </button>
+                {deleteError && (
+                  <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg">{deleteError}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, Eye, Globe, Heart, Lock, Menu, MessageCircle, Shield, UserCheck, X } from 'lucide-react';
+import { AlertTriangle, Check, Eye, Globe, Heart, Lock, Menu, MessageCircle, Shield, UserCheck, X, Smartphone } from 'lucide-react';
 
 const navItems = [
   { label: 'Home', id: 'home' },
@@ -54,14 +54,15 @@ function PanelShell({ children, className = '' }) {
   );
 }
 
-function StoreBadge({ type }) {
+function StoreBadge({ type, onClick }) {
   const isApple = type === 'apple';
 
   return (
-    <Link
-      to="/login"
+    <button
+      type="button"
+      onClick={onClick}
       className="group inline-flex items-center gap-2.5 rounded-2xl border border-slate-800/70 bg-slate-950 px-3 py-2 text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-slate-900"
-      aria-label={`${isApple ? 'App Store' : 'Google Play'} button that temporarily opens the web app login`}
+      aria-label={`${isApple ? 'App Store' : 'Google Play'} — coming soon`}
     >
       <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
         {isApple ? (
@@ -86,7 +87,7 @@ function StoreBadge({ type }) {
           {isApple ? 'App Store' : 'Google Play'}
         </span>
       </span>
-    </Link>
+    </button>
   );
 }
 
@@ -248,6 +249,7 @@ function GlowRibbon({ size = 'large' }) {
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(null); // 'apple' | 'google' | null
 
   const scrollTo = (id) => {
     setMenuOpen(false);
@@ -407,8 +409,8 @@ export default function LandingPage() {
                 <div className="mt-7 flex flex-col items-center gap-2.5 lg:items-start">
                   <p className="text-[10px] font-medium uppercase tracking-[0.20em] text-slate-500">Also available on</p>
                   <div className="flex flex-wrap gap-3">
-                    <StoreBadge type="apple" />
-                    <StoreBadge type="google" />
+                    <StoreBadge type="apple" onClick={() => setShowComingSoon('apple')} />
+                    <StoreBadge type="google" onClick={() => setShowComingSoon('google')} />
                   </div>
                 </div>
               </div>
@@ -549,8 +551,8 @@ export default function LandingPage() {
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-                  <StoreBadge type="apple" />
-                  <StoreBadge type="google" />
+                  <StoreBadge type="apple" onClick={() => setShowComingSoon('apple')} />
+                  <StoreBadge type="google" onClick={() => setShowComingSoon('google')} />
                 </div>
 
                 <div className="mt-8 rounded-[28px] border border-white/70 bg-white/40 p-7 shadow-[0_4px_24px_rgba(91,84,142,0.07)] backdrop-blur-md">
@@ -599,6 +601,58 @@ export default function LandingPage() {
           </PanelShell>
         </main>
       </div>
+
+      {/* Coming Soon modal */}
+      {showComingSoon && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setShowComingSoon(null)}
+        >
+          <div
+            className="relative w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowComingSoon(null)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+
+            {/* Icon */}
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg">
+              <Smartphone className="h-8 w-8 text-white" />
+            </div>
+
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Coming Soon!</h2>
+            <p className="text-slate-600 text-sm leading-relaxed mb-6">
+              The{' '}
+              <span className="font-semibold">
+                {showComingSoon === 'apple' ? 'iOS App Store' : 'Google Play'}
+              </span>{' '}
+              version of 99Cupid is on its way. In the meantime, you can use our web app instantly — no download needed.
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <Link
+                to="/login"
+                onClick={() => setShowComingSoon(null)}
+                className="w-full rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 py-3 text-sm font-semibold text-white shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all"
+              >
+                Use the Web App Now
+              </Link>
+              <button
+                onClick={() => setShowComingSoon(null)}
+                className="w-full rounded-2xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
