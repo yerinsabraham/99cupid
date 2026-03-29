@@ -554,26 +554,6 @@ export default function LandingPage() {
                   <StoreBadge type="apple" onClick={() => setShowComingSoon('apple')} />
                   <StoreBadge type="google" onClick={() => setShowComingSoon('google')} />
                 </div>
-
-                <div className="mt-8 rounded-[28px] border border-white/70 bg-white/40 p-7 shadow-[0_4px_24px_rgba(91,84,142,0.07)] backdrop-blur-md">
-                  <h3 className="text-center text-[22px] font-bold leading-tight tracking-[-0.01em] text-slate-900 lg:text-left">
-                    Become Part of a Global Love Community Today
-                  </h3>
-                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-                    <Link
-                      to="/login"
-                      className="rounded-2xl bg-rose-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(225,60,80,0.32)] transition duration-200 hover:-translate-y-0.5 hover:bg-rose-600"
-                    >
-                      Create Account
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="rounded-2xl border border-slate-200/80 bg-white/65 px-7 py-3 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:bg-white/85"
-                    >
-                      Sign In
-                    </Link>
-                  </div>
-                </div>
               </div>
 
               {/* Download illustration */}
